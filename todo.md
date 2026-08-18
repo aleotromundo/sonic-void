@@ -226,8 +226,12 @@
 
 - [x] Reproducir y diagnosticar la regresión que dejó la búsqueda sin resultados en Manus Space.
 - [x] Restaurar resultados útiles con fallback tolerante cuando Spotify, MusicBrainz, Audius o Jamendo fallen.
-- [ ] Validar una búsqueda real y publicar la corrección en Manus Space antes de retomar Vercel.
+- [x] Validar una búsqueda real y publicar la corrección en Manus Space antes de retomar Vercel.
 
 - [x] Añadir filtros opcionales y combinables por país o mercado, género/movimiento y año o intervalo de fechas.
 - [x] Conectar los filtros al backend usando metadatos reales y conservar el filtro de pistas reproducibles.
 - [x] Añadir controles accesibles, pruebas de combinaciones y validación de búsqueda simple sin filtros.
+
+- [ ] Revisar y corregir la conexión del proyecto nowarfy con `aleotromundo/sonic-void`, rama `main` y Root Directory en Vercel.
+- [ ] Verificar variables de entorno y activar un redeploy de Vercel sin modificar secretos innecesariamente.
+- [ ] Confirmar que `nowarfy.vercel.app` sirva la SPA y que `/api/trpc` responda correctamente.
