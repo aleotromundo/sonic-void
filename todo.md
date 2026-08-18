@@ -420,5 +420,5 @@
 - [x] Mapear esos patrones a nowarfy sin incorporar descarga o retransmisión no autorizada
 - [x] Implementar las mejoras compatibles en metadata, cola y biblioteca local
 - [x] Validar pruebas, interfaz y documentación de límites
-- [ ] Corregir el rewrite global de Vercel para que `/api/trpc` llegue al handler serverless y no devuelva la SPA
-- [ ] Verificar públicamente `auth.me` y `music.openCatalog` después de corregir el routing de Vercel
+- [x] Corregir el rewrite global de Vercel para que `/api/trpc` llegue al handler serverless y no devuelva la SPA
+- [x] Verificar públicamente `auth.me` y `music.openCatalog` después de corregir el routing de Vercel
