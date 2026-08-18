@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { loadLocalLibrary, saveLocalLibrary } from "./localPersistence";
+import { loadLocalLibrary, localTrackKey, saveLocalLibrary } from "./localPersistence";
 
 const storage = new Map<string, string>();
 const localStorageMock = {
@@ -17,6 +17,11 @@ describe("local library persistence", () => {
   it("initializes playlists and queue without inventing user content", () => {
     (globalThis as { window?: unknown }).window = { localStorage: localStorageMock };
     expect(loadLocalLibrary()).toMatchObject({ favorites: [], queue: [], playlists: [] });
+  });
+
+  it("namespaces track identity by source", () => {
+    expect(localTrackKey({ source: "jamendo", id: "same-id" })).toBe("jamendo:same-id");
+    expect(localTrackKey({ source: "audius", id: "same-id" })).not.toBe("jamendo:same-id");
   });
 
   it("round-trips a local playlist and queue", () => {

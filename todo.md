@@ -408,3 +408,15 @@
 - [x] Diseñar roadmap gratuito y legal priorizado por impacto y viabilidad
 - [x] Implementar el primer bloque de mejoras críticas derivado de la auditoría
 - [x] Validar el bloque implementado con pruebas, captura visual y despliegues
+- [x] Evaluar spotDL, SpotiFlyer, Spowlo, sunnify, spotify-dl, yt-dlp y librespot por función, licencia y riesgo
+- [x] Documentar qué patrones de metadata, búsqueda, colas y UI pueden reutilizarse legalmente
+- [x] Mantener fuera de nowarfy la descarga o retransmisión de audio de YouTube/Spotify sin autorización
+- [x] Incorporar las mejoras legales derivadas de la evaluación y validar pruebas
+- [ ] Definir modo personal: metadata oficial, reproducción autorizada o archivos locales del usuario
+- [ ] Mantener el servidor sin downloader ni retransmisión de audio de terceros
+- [ ] Diseñar estados UI distintos para archivo local, preview autorizada, metadata sin audio y fuente no disponible
+- [ ] Validar aislamiento, persistencia local y reproducción del modo personal
+- [x] Extraer patrones de matching, metadata, colas, progreso y persistencia de los repositorios sugeridos
+- [x] Mapear esos patrones a nowarfy sin incorporar descarga o retransmisión no autorizada
+- [x] Implementar las mejoras compatibles en metadata, cola y biblioteca local
+- [x] Validar pruebas, interfaz y documentación de límites

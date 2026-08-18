@@ -32,6 +32,10 @@ export type LocalHistoryItem = {
   plays: number;
 };
 
+export function localTrackKey(track: Pick<LocalQueueItem, "source" | "id">) {
+  return `${track.source}:${track.id}`;
+}
+
 export type LocalLibraryState = {
   favorites: string[];
   queue: LocalQueueItem[];
