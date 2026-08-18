@@ -1,0 +1,11 @@
+{
+  "name": "Sonic//Void Music Finder",
+  "short_name": "Sonic//Void",
+  "description": "Un buscador musical personal con biblioteca local y reproducción autorizada.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#07080c",
+  "theme_color": "#ff2db2",
+  "lang": "es",
+  "icons": []
+}

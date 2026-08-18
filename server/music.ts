@@ -3,6 +3,7 @@ import axios from "axios";
 export type MusicTrack = {
   id: string;
   source: "spotify" | "musicbrainz";
+  kind: "track" | "album";
   name: string;
   artist: string;
   album: string;
@@ -17,23 +18,29 @@ export type MusicTrack = {
   availableMarkets: string[];
 };
 
-export type LyricsResult = {
-  status: "available" | "not_configured" | "not_found" | "unavailable";
-  text: string | null;
-  sourceUrl: string | null;
-  sourceName: string | null;
-  message: string;
-};
+type SearchIntent = { type: "artist" | "album" | "track" | "free"; artist?: string; terms?: string };
+export type LyricsResult = { status: "available" | "not_configured" | "not_found" | "unavailable"; text: string | null; sourceUrl: string | null; sourceName: string | null; message: string };
 
 let tokenCache: { token: string; expiresAt: number } | null = null;
 let lastMusicBrainzCall = 0;
-
 function env(name: string) { return process.env[name]?.trim() || ""; }
+function normalize(value: string) { return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim(); }
 function durationLabel(durationMs: number) { const totalSeconds = Math.round(durationMs / 1000); return `${Math.floor(totalSeconds / 60)}:${String(totalSeconds % 60).padStart(2, "0")}`; }
 
+export function interpretQuery(input: string): SearchIntent {
+  const query = input.trim().replace(/\s+/g, " ");
+  const normalized = normalize(query);
+  const albumMatch = normalized.match(/^(?:albumes?|albums?|discos?|discografia)\s+(?:de|del)\s+(.+)$/);
+  if (albumMatch) return { type: "album", artist: albumMatch[1] };
+  const artistMatch = normalized.match(/^(?:canciones?|temas?|musica|musicas)\s+(?:de|del)\s+(.+)$/);
+  if (artistMatch) return { type: "track", artist: artistMatch[1] };
+  if (normalized.startsWith("artista ")) return { type: "artist", artist: normalized.slice(8).trim() };
+  if (!normalized.includes(" ") || normalized.length < 28) return { type: "artist", artist: normalized };
+  return { type: "free", terms: query };
+}
+
 async function getSpotifyToken() {
-  const clientId = env("SPOTIFY_CLIENT_ID");
-  const clientSecret = env("SPOTIFY_CLIENT_SECRET");
+  const clientId = env("SPOTIFY_CLIENT_ID"); const clientSecret = env("SPOTIFY_CLIENT_SECRET");
   if (!clientId || !clientSecret) return null;
   if (tokenCache && tokenCache.expiresAt > Date.now() + 30_000) return tokenCache.token;
   const basic = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
@@ -42,61 +49,35 @@ async function getSpotifyToken() {
   return tokenCache.token;
 }
 
-function toSpotifyTrack(track: any): MusicTrack {
-  return { id: track.id, source: "spotify", name: track.name, artist: track.artists.map((artist: any) => artist.name).join(", "), album: track.album.name, releaseDate: track.album.release_date, releaseYear: track.album.release_date?.slice(0, 4) ?? "—", durationMs: track.duration_ms, durationLabel: durationLabel(track.duration_ms), popularity: track.popularity, imageUrl: track.album.images?.[0]?.url ?? null, spotifyUrl: track.external_urls?.spotify ?? `https://open.spotify.com/track/${track.id}`, previewUrl: track.preview_url ?? null, availableMarkets: track.available_markets ?? [] };
-}
+function toSpotifyTrack(track: any): MusicTrack { return { id: track.id, source: "spotify", kind: "track", name: track.name, artist: track.artists.map((artist: any) => artist.name).join(", "), album: track.album.name, releaseDate: track.album.release_date, releaseYear: track.album.release_date?.slice(0, 4) ?? "—", durationMs: track.duration_ms, durationLabel: durationLabel(track.duration_ms), popularity: track.popularity, imageUrl: track.album.images?.[0]?.url ?? null, spotifyUrl: track.external_urls?.spotify ?? `https://open.spotify.com/track/${track.id}`, previewUrl: track.preview_url ?? null, availableMarkets: track.available_markets ?? [] }; }
 
 async function fetchSpotify(query: string, offset: number, limit: number) {
-  const token = await getSpotifyToken();
-  if (!token) return null;
+  const token = await getSpotifyToken(); if (!token) return null;
   let response;
-  try {
-    response = await axios.get("https://api.spotify.com/v1/search", { params: { q: query, type: "track", limit, offset, market: "US" }, headers: { Authorization: `Bearer ${token}` }, timeout: 10_000 });
-  } catch (error: any) {
-    const status = error?.response?.status;
-    if (status === 401 || status === 403 || status === 429) return null;
-    throw error;
-  }
-  const tracks = response.data.tracks;
-  const items = tracks.items.map(toSpotifyTrack);
+  try { response = await axios.get("https://api.spotify.com/v1/search", { params: { q: query, type: "track", limit, offset, market: "US" }, headers: { Authorization: `Bearer ${token}` }, timeout: 10_000 }); }
+  catch (error: any) { const status = error?.response?.status; if (status === 401 || status === 403 || status === 429) return null; throw error; }
+  const tracks = response.data.tracks; const items = tracks.items.map(toSpotifyTrack);
   return { configured: true, source: "spotify" as const, items, total: tracks.total, nextOffset: offset + items.length < tracks.total ? offset + items.length : null };
 }
 
-async function waitForMusicBrainzSlot() {
-  const wait = Math.max(0, 1000 - (Date.now() - lastMusicBrainzCall));
-  if (wait) await new Promise(resolve => setTimeout(resolve, wait));
-  lastMusicBrainzCall = Date.now();
-}
+async function waitForMusicBrainzSlot() { const wait = Math.max(0, 1000 - (Date.now() - lastMusicBrainzCall)); if (wait) await new Promise(resolve => setTimeout(resolve, wait)); lastMusicBrainzCall = Date.now(); }
+async function musicBrainzGet(path: string, params: Record<string, string | number>) { await waitForMusicBrainzSlot(); return axios.get(`https://musicbrainz.org/ws/2/${path}`, { params: { ...params, fmt: "json" }, headers: { "User-Agent": "SonicVoid/1.0 (personal music finder)" }, timeout: 10_000 }); }
 
-async function searchMusicBrainz(query: string, offset: number, limit: number) {
-  await waitForMusicBrainzSlot();
-  const response = await axios.get("https://musicbrainz.org/ws/2/recording", { params: { query, fmt: "json", limit, offset }, headers: { "User-Agent": "SonicVoid/1.0 (personal music finder)" }, timeout: 10_000 });
-  const recordings = response.data.recordings ?? [];
-  const items: MusicTrack[] = recordings.map((recording: any) => {
-    const release = recording.releases?.[0];
-    const releaseGroupId = release?.["release-group"]?.id;
-    const releaseDate = release?.date ?? "";
-    return { id: recording.id, source: "musicbrainz", name: recording.title ?? "Untitled recording", artist: recording["artist-credit"]?.map((credit: any) => credit.name ?? credit.artist?.name).filter(Boolean).join(", ") ?? "Unknown artist", album: release?.title ?? "Unknown release", releaseDate, releaseYear: releaseDate.slice(0, 4) || "—", durationMs: recording.length ?? 0, durationLabel: recording.length ? durationLabel(recording.length) : "—", popularity: 0, imageUrl: releaseGroupId ? `https://coverartarchive.org/release-group/${releaseGroupId}/front-500` : null, spotifyUrl: `https://musicbrainz.org/recording/${recording.id}`, previewUrl: null, availableMarkets: [] };
-  });
-  return { configured: true, source: "musicbrainz" as const, items, total: response.data.count ?? items.length, nextOffset: offset + items.length < (response.data.count ?? items.length) ? offset + items.length : null };
-}
+function artistExactMatch(artists: any[], name: string) { const target = normalize(name); return artists.find(artist => normalize(artist.name) === target); }
+export function rankMusicTracks(items: MusicTrack[], query: string) { const target = normalize(query); const score = (item: MusicTrack) => { const name = normalize(item.name); const artist = normalize(item.artist); const album = normalize(item.album); return (name === target ? 120 : 0) + (album === target ? 100 : 0) + (artist === target ? 90 : 0) + (name.startsWith(target) ? 35 : 0) + (album.startsWith(target) ? 25 : 0) + (artist.includes(target) ? 15 : 0); }; return [...items].sort((a, b) => score(b) - score(a)); }
+function toAlbumResult(group: any, artistName: string): MusicTrack { const date = group["first-release-date"] ?? ""; return { id: group.id, source: "musicbrainz", kind: "album", name: group.title ?? "Untitled album", artist: artistName, album: group.title ?? "Unknown release", releaseDate: date, releaseYear: date.slice(0, 4) || "—", durationMs: 0, durationLabel: "—", popularity: 0, imageUrl: `https://coverartarchive.org/release-group/${group.id}/front-500`, spotifyUrl: `https://musicbrainz.org/release-group/${group.id}`, previewUrl: null, availableMarkets: [] }; }
 
-export async function searchMusic(query: string, offset: number, limit = 12) {
-  const spotifyResult = await fetchSpotify(query, offset, limit);
-  return spotifyResult ?? searchMusicBrainz(query, offset, limit);
-}
+async function findArtist(artistName: string) { const response = await musicBrainzGet("artist", { query: `artist:"${artistName}"`, limit: 5 }); return artistExactMatch(response.data.artists ?? [], artistName); }
+async function searchArtistAlbums(artistName: string, offset: number, limit: number) { const artist = await findArtist(artistName); if (!artist) return { configured: true, source: "musicbrainz" as const, items: [] as MusicTrack[], total: 0, nextOffset: null }; const response = await musicBrainzGet("release-group", { artist: artist.id, limit, offset, type: "album|ep" }); const groups = response.data["release-groups"] ?? []; return { configured: true, source: "musicbrainz" as const, items: groups.map((group: any) => toAlbumResult(group, artist.name)), total: response.data["release-group-count"] ?? groups.length, nextOffset: offset + groups.length < (response.data["release-group-count"] ?? groups.length) ? offset + groups.length : null }; }
 
+async function searchMusicBrainzRecordings(query: string, offset: number, limit: number, rankingQuery = query) { const response = await musicBrainzGet("recording", { query, limit, offset }); const recordings = response.data.recordings ?? []; const items: MusicTrack[] = recordings.map((recording: any) => { const release = recording.releases?.[0]; const releaseGroupId = release?.["release-group"]?.id; const date = release?.date ?? recording["first-release-date"] ?? ""; return { id: recording.id, source: "musicbrainz", kind: "track", name: recording.title ?? "Untitled recording", artist: recording["artist-credit"]?.map((credit: any) => credit.name ?? credit.artist?.name).filter(Boolean).join(", ") ?? "Unknown artist", album: release?.title ?? "Unknown release", releaseDate: date, releaseYear: date.slice(0, 4) || "—", durationMs: recording.length ?? 0, durationLabel: recording.length ? durationLabel(recording.length) : "—", popularity: 0, imageUrl: releaseGroupId ? `https://coverartarchive.org/release-group/${releaseGroupId}/front-500` : null, spotifyUrl: `https://musicbrainz.org/recording/${recording.id}`, previewUrl: null, availableMarkets: [] };   }); const rankedItems = rankMusicTracks(items, rankingQuery); return { configured: true, source: "musicbrainz" as const, items: rankedItems, total: response.data.count ?? rankedItems.length, nextOffset: offset + rankedItems.length < (response.data.count ?? rankedItems.length) ? offset + rankedItems.length : null }; }
+
+export async function searchMusicBrainz(query: string, offset: number, limit = 12) { const intent = interpretQuery(query); if ((intent.type === "artist" || intent.type === "album") && intent.artist) { const albums = await searchArtistAlbums(intent.artist, offset, limit); if (albums.items.length || albums.total > 0) return albums; return searchMusicBrainzRecordings(query, offset, limit, query); } if (intent.type === "track" && intent.artist) return searchMusicBrainzRecordings(`artist:"${intent.artist}"`, offset, limit, intent.artist); return searchMusicBrainzRecordings(query, offset, limit, query); }
+export function emptySearchResult(source: "spotify" | "musicbrainz" = "musicbrainz") { return { configured: true, source, items: [] as MusicTrack[], total: 0, nextOffset: null }; }
+async function safeSpotifySearch(query: string, offset: number, limit: number) { try { return await fetchSpotify(query, offset, limit); } catch (error) { console.warn("[Spotify] Search unavailable:", error instanceof Error ? error.message : "unknown error"); return null; } }
+export async function searchMusic(query: string, offset: number, limit = 12) { const intent = interpretQuery(query); try { if (intent.type === "artist" || intent.type === "album" || intent.type === "track") return await searchMusicBrainz(query, offset, limit); const spotifyResult = await safeSpotifySearch(query, offset, limit); return spotifyResult ?? await searchMusicBrainz(query, offset, limit); } catch (error) { console.warn("[Music] Primary source unavailable, using fallback:", error instanceof Error ? error.message : "unknown error"); const spotifyResult = await safeSpotifySearch(query, offset, limit); return spotifyResult ?? emptySearchResult(); } }
 export async function searchSpotifyOnly(query: string, offset: number, limit = 12) { return fetchSpotify(query, offset, limit); }
 export async function searchSpotify(query: string, offset: number, limit = 12) { return searchSpotifyOnly(query, offset, limit); }
 export async function isSpotifyConfigured() { return Boolean(env("SPOTIFY_CLIENT_ID") && env("SPOTIFY_CLIENT_SECRET")); }
 
-export async function getGeniusLyrics(name: string, artist: string): Promise<LyricsResult> {
-  const accessToken = env("GENIUS_ACCESS_TOKEN");
-  if (!accessToken) return { status: "not_configured", text: null, sourceUrl: null, sourceName: null, message: "Configurá GENIUS_ACCESS_TOKEN para habilitar la búsqueda en Genius." };
-  try {
-    const response = await axios.get("https://api.genius.com/search", { params: { q: `${name} ${artist}` }, headers: { Authorization: `Bearer ${accessToken}` }, timeout: 10_000 });
-    const hit = response.data.response?.hits?.[0]?.result;
-    if (!hit) return { status: "not_found", text: null, sourceUrl: null, sourceName: null, message: "No encontramos una página de letras coincidente en Genius." };
-    return { status: "unavailable", text: null, sourceUrl: hit.url, sourceName: "Genius", message: "Genius autoriza la búsqueda y los metadatos, pero su API pública no entrega el texto completo de las letras. Abrí la página original para leerlas allí." };
-  } catch { return { status: "unavailable", text: null, sourceUrl: null, sourceName: null, message: "Genius no respondió. Podés reintentar en unos segundos." }; }
-}
+export async function getGeniusLyrics(name: string, artist: string): Promise<LyricsResult> { const accessToken = env("GENIUS_ACCESS_TOKEN"); if (!accessToken) return { status: "not_configured", text: null, sourceUrl: null, sourceName: null, message: "Configurá GENIUS_ACCESS_TOKEN para habilitar la búsqueda en Genius." }; try { const response = await axios.get("https://api.genius.com/search", { params: { q: `${name} ${artist}` }, headers: { Authorization: `Bearer ${accessToken}` }, timeout: 10_000 }); const hit = response.data.response?.hits?.[0]?.result; if (!hit) return { status: "not_found", text: null, sourceUrl: null, sourceName: null, message: "No encontramos una página de letras coincidente en Genius." }; return { status: "unavailable", text: null, sourceUrl: hit.url, sourceName: "Genius", message: "Genius autoriza la búsqueda y los metadatos, pero su API pública no entrega el texto completo de las letras. Abrí la página original para leerlas allí." }; } catch { return { status: "unavailable", text: null, sourceUrl: null, sourceName: null, message: "Genius no respondió. Podés reintentar en unos segundos." }; } }

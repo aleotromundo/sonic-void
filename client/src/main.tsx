@@ -37,6 +37,12 @@ queryClient.getMutationCache().subscribe(event => {
   }
 });
 
+if ("serviceWorker" in navigator && import.meta.env.PROD) {
+  window.addEventListener("load", () => {
+    void navigator.serviceWorker.register("/sw.js").catch(() => undefined);
+  });
+}
+
 const trpcClient = trpc.createClient({
   links: [
     httpBatchLink({

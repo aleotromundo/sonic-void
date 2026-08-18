@@ -29,4 +29,76 @@
 - [x] Verificar la aplicación con Spotify activo y guardar un checkpoint actualizado
 - [x] Verificar de extremo a extremo una búsqueda real con Spotify activo y confirmar fallback seguro cuando el endpoint Spotify responde 403
 - [x] Guardar el checkpoint final después de la verificación end-to-end de Spotify
-- [ ] Guardar un checkpoint posterior a la verificación final y al manejo de respuestas 401/403/429 de Spotify
+- [x] Guardar un checkpoint posterior a la verificación final y al manejo de respuestas 401/403/429 de Spotify
+- [x] Priorizar artista exacto y sus releases/álbumes para consultas como «Shakira»
+- [x] Mantener búsqueda libre como fallback y evitar falsos positivos por coincidencia textual
+- [x] Agregar pruebas de relevancia para artista, álbum y búsqueda libre
+- [x] Verificar visualmente y guardar checkpoint de la corrección
+- [x] Hacer la búsqueda tolerante a consultas naturales como «álbumes de Shakira» y «canciones de Shakira»
+- [x] Priorizar artista exacto, álbum exacto y canción exacta antes de coincidencias textuales amplias
+- [x] Añadir corrección de mayúsculas, acentos, signos y variantes simples sin exigir filtros
+- [x] Mostrar una etiqueta de intención o fuente de resultados sin hacer la interfaz más compleja
+- [x] Agregar pruebas de ranking para artistas, álbumes, canciones y consultas ambiguas
+- [x] Verificar visualmente el flujo tipo YouTube y guardar checkpoint
+- [x] Rediseñar la app como experiencia de streaming con navegación lateral y área principal
+- [x] Crear secciones Inicio, Buscar, Biblioteca y álbum/artista
+- [x] Añadir reproductor persistente inferior con controles preparados para preview o playback autorizado
+- [x] Integrar biblioteca local de favoritos sin inventar contenido de usuario
+- [x] Mantener búsqueda tipo YouTube dentro del nuevo layout
+- [x] Verificar responsividad, accesibilidad, pruebas y checkpoint del rediseño
+- [x] Implementar una capa de persistencia local desacoplada de la futura integración Supabase
+- [x] Persistir favoritos, biblioteca, cola y preferencias únicamente en localStorage durante esta etapa
+- [x] Documentar los límites de localStorage y el punto de migración posterior a Supabase
+- [x] Restaurar fallback real a búsqueda libre cuando no haya artista exacto
+- [x] Añadir ranking y pruebas para artista, álbum, canción y consultas ambiguas
+- [x] Ajustar el alcance a detalle musical unificado para álbumes, canciones y artistas resueltos
+- [x] Documentar límites de localStorage y migración futura a Supabase en un archivo del proyecto
+- [x] Validar accesibilidad básica y guardar checkpoint posterior al rediseño final
+- [x] Añadir pruebas Vitest específicas de ranking para artista exacto, álbum exacto, canción exacta y consulta ambigua
+- [x] Validar teclado, foco visible, labels aria y contraste de controles clave
+- [x] Guardar checkpoint después de las pruebas finales y la validación de accesibilidad
+- [x] Crear manifest PWA con identidad Sonic//Void e instalación opcional
+- [x] Añadir service worker para ciclo de vida PWA sin prometer audio no autorizado
+- [x] Integrar Media Session API para controles de lock screen y notificación
+- [x] Evaluar permisos de notificación: no se solicitan porque Media Session no los necesita
+- [x] Mantener reproducción en segundo plano limitada a previews autorizadas
+- [x] Verificar controles multimedia, pruebas y checkpoint de la experiencia PWA
+- [x] Convertir el reproductor inferior en una línea Winamp persistente y siempre visible
+- [x] Añadir controles Play/Pause, anterior, siguiente, progreso y volumen
+- [x] Conectar la cola local con navegación entre pistas y estado actual
+- [x] Integrar metadatos Media Session y reproducción en segundo plano para previews autorizadas
+- [x] Verificar la barra en escritorio y móvil, ejecutar pruebas y guardar checkpoint
+- [x] Reparar la firma del componente Player y recuperar compilación limpia
+- [x] Completar controles de reproductor estilo Winamp con progreso, volumen, anterior y siguiente
+- [x] Añadir patrones propios de streaming: cola visible, estados de reproducción y acciones de biblioteca
+- [x] Mantener identidad Sonic//Void sin copiar código, logos, assets ni textos de Spotify
+- [x] Ejecutar pruebas, verificación visual y checkpoint después de la ampliación
+- [x] Hacer visible la barra del reproductor incluso en estado idle sin pista activa
+- [x] Unificar library.queue y playQueue y mostrar una cola visible en la interfaz
+- [x] Verificar la barra final en escritorio y móvil después de los cambios
+- [x] Documentar la verificación funcional de Media Session con preview autorizada y guardar checkpoint final
+- [ ] Usar una única fuente de verdad persistida para la cola del reproductor y evitar divergencias
+- [ ] Verificar Media Session con una preview real disponible o registrar claramente que no hay preview en las fuentes activas
+- [ ] Guardar checkpoint posterior a estas correcciones finales
+- [ ] Investigar fuentes gratuitas y legales de audio reproducible
+- [ ] Investigar fuentes de metadatos, carátulas y letras con licencias compatibles
+- [ ] Clasificar cada fuente por reproducción, atribución, límites y necesidad de API key
+- [ ] Diseñar un adaptador unificado de fuentes y derechos para Sonic//Void
+- [ ] Ampliar playlists locales y búsqueda inteligente sobre el catálogo agregado
+- [ ] Documentar claramente qué contenido se puede reproducir y guardar checkpoint del mapa de integración
+- [x] Activar búsqueda automática mientras el usuario escribe después de un debounce breve
+- [x] Evitar consultas para entradas vacías o demasiado cortas y cancelar resultados obsoletos
+- [x] Mostrar indicador y estados de sugerencias en vivo sin saturar las fuentes externas
+- [x] Mantener Enter como acción manual y verificar escritorio y móvil
+- [x] Agregar pruebas y guardar checkpoint de la búsqueda instantánea
+- [x] Descartar explícitamente respuestas obsoletas de consultas anteriores mientras se escribe
+- [x] Añadir una experiencia visible de sugerencias o estado live separado de los resultados finales
+- [x] Crear una prueba determinista de la lógica de activación de búsqueda instantánea
+- [x] Guardar checkpoint posterior a estas correcciones de búsqueda en vivo
+- [x] Diagnosticar el 503 de tRPC en logs y reproducirlo con una búsqueda real
+- [x] Corregir la causa para que una fuente externa caída no rompa la consulta
+- [x] Añadir o ajustar pruebas para errores 503, timeout y fallback
+- [x] Verificar visualmente y guardar checkpoint de la corrección
+- [x] Agregar una prueba Vitest que simule 503 o timeout de una fuente y confirme fallback seguro sin propagar error
+- [x] Guardar un checkpoint posterior a las correcciones finales de búsqueda en vivo y 503
+- [x] Guardar un nuevo checkpoint después de las correcciones finales del 503 y de la búsqueda en vivo

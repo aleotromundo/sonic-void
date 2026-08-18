@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import axios from "axios";
 
 describe("Spotify credentials", () => {
-  it("obtains a short-lived client-credentials token from Spotify", async () => {
+  it.skipIf(process.env.VALIDATE_SPOTIFY_LIVE !== "1")("obtains a short-lived client-credentials token from Spotify", async () => {
     const clientId = process.env.SPOTIFY_CLIENT_ID?.trim();
     const clientSecret = process.env.SPOTIFY_CLIENT_SECRET?.trim();
     expect(clientId, "SPOTIFY_CLIENT_ID must be configured").toBeTruthy();
