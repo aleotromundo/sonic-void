@@ -1,6 +1,6 @@
 import axios from "axios";
 import { describe, expect, it, vi } from "vitest";
-import { emptySearchResult, getGeniusLyrics, interpretQuery, isSpotifyConfigured, matchesAudioCandidate, matchesAudioQuery, matchesJamendoCandidate, matchesJamendoQuery, rankMusicTracks, searchMusic, searchSpotify } from "./music";
+import { applySearchFilters, emptySearchResult, getGeniusLyrics, interpretQuery, isSpotifyConfigured, matchesAudioCandidate, matchesAudioQuery, matchesJamendoCandidate, matchesJamendoQuery, rankMusicTracks, searchMusic, searchSpotify } from "./music";
 
 describe("music integrations", () => {
   it("interprets natural artist and album queries", () => {
@@ -15,6 +15,16 @@ describe("music integrations", () => {
     expect(rankMusicTracks([base("b", "Other", "Other", "Other"), base("a", "Song", "Artist", "Album")], "Song")[0]?.id).toBe("a");
     expect(rankMusicTracks([base("a", "Blue", "Artist", "Album"), base("b", "Blues", "Artist", "Album")], "blue")[0]?.id).toBe("a");
     expect(rankMusicTracks([base("b", "Live Set", "Artist", "Discovery Deluxe"), base("a", "Album Cut", "Artist", "Discovery")], "Discovery")[0]?.id).toBe("a");
+  });
+
+  it("filters tracks by market and release year without inventing availability", () => {
+    const tracks = [
+      { id: "us-2020", source: "spotify" as const, kind: "track" as const, name: "US 2020", artist: "Artist", album: "Album", releaseDate: "2020", releaseYear: "2020", durationMs: 1000, durationLabel: "0:01", popularity: 0, imageUrl: null, spotifyUrl: "https://open.spotify.com/track/us-2020", previewUrl: "https://audio.example/us.mp3", availableMarkets: ["US"], licenseLabel: "Preview", attribution: "Spotify", licenseUrl: null },
+      { id: "ar-2022", source: "spotify" as const, kind: "track" as const, name: "AR 2022", artist: "Artist", album: "Album", releaseDate: "2022", releaseYear: "2022", durationMs: 1000, durationLabel: "0:01", popularity: 0, imageUrl: null, spotifyUrl: "https://open.spotify.com/track/ar-2022", previewUrl: "https://audio.example/ar.mp3", availableMarkets: ["AR"], licenseLabel: "Preview", attribution: "Spotify", licenseUrl: null },
+      { id: "unknown", source: "audius" as const, kind: "track" as const, name: "Unknown market", artist: "Artist", album: "Album", releaseDate: "2021", releaseYear: "2021", durationMs: 1000, durationLabel: "0:01", popularity: 0, imageUrl: null, spotifyUrl: "https://audius.co/artist/unknown", previewUrl: "https://audio.example/unknown.mp3", availableMarkets: [], licenseLabel: "Creator license", attribution: "Artist", licenseUrl: null },
+    ];
+    expect(applySearchFilters(tracks, { country: "US", yearFrom: 2020, yearTo: 2021 }).map(track => track.id)).toEqual(["us-2020", "unknown"]);
+    expect(applySearchFilters(tracks, { country: "AR", yearFrom: 2022 }).map(track => track.id)).toEqual(["ar-2022"]);
   });
 
   it("returns a safe empty result when an external source is unavailable", () => {

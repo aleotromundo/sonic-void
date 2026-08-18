@@ -219,3 +219,15 @@
 - [x] Añadir botón de silencio y control de volumen deslizable con estado accesible y persistencia local.
 - [x] Mostrar una sección visible de “A continuación” con las pistas ya preparadas por autoplay.
 - [x] Añadir pruebas RTL para volumen, silencio y lista de próximas pistas.
+
+- [ ] Diagnosticar el fallo persistente del despliegue Vercel y reproducirlo en el dominio público.
+- [ ] Corregir entrypoint, rutas, build o configuración de variables que impidan cargar la SPA y tRPC en Vercel.
+- [ ] Validar el despliegue Vercel corregido y documentar cualquier variable que el usuario deba cargar manualmente.
+
+- [x] Reproducir y diagnosticar la regresión que dejó la búsqueda sin resultados en Manus Space.
+- [x] Restaurar resultados útiles con fallback tolerante cuando Spotify, MusicBrainz, Audius o Jamendo fallen.
+- [ ] Validar una búsqueda real y publicar la corrección en Manus Space antes de retomar Vercel.
+
+- [x] Añadir filtros opcionales y combinables por país o mercado, género/movimiento y año o intervalo de fechas.
+- [x] Conectar los filtros al backend usando metadatos reales y conservar el filtro de pistas reproducibles.
+- [x] Añadir controles accesibles, pruebas de combinaciones y validación de búsqueda simple sin filtros.
