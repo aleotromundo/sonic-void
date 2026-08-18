@@ -1,6 +1,6 @@
 import axios from "axios";
 import { describe, expect, it, vi } from "vitest";
-import { applySearchFilters, emptySearchResult, getGeniusLyrics, interpretQuery, isSpotifyConfigured, matchesAudioCandidate, matchesAudioQuery, matchesJamendoCandidate, matchesJamendoQuery, rankMusicTracks, searchMusic, searchSpotify } from "./music";
+import { applySearchFilters, emptySearchResult, getGeniusLyrics, interpretQuery, isSpotifyConfigured, matchesAudioCandidate, matchesAudioQuery, matchesJamendoCandidate, matchesJamendoQuery, probePlayableStream, rankMusicTracks, searchMusic, searchSpotify } from "./music";
 
 describe("music integrations", () => {
   it("interprets natural artist and album queries", () => {
@@ -51,12 +51,14 @@ describe("music integrations", () => {
     process.env.SPOTIFY_CLIENT_ID = "";
     process.env.SPOTIFY_CLIENT_SECRET = "";
     const request = vi.spyOn(axios, "get");
+    const probe = vi.spyOn(axios, "request").mockResolvedValue({ status: 206, headers: { "content-type": "audio/mpeg", "content-length": "2" }, data: { destroy: vi.fn() } } as any);
     request.mockResolvedValueOnce({ data: { artists: [{ id: "artist-1", name: "Shakira" }] } });
     request.mockResolvedValueOnce({ data: { "release-groups": [], "release-group-count": 0 } });
     request.mockResolvedValueOnce({ data: { recordings: [{ id: "recording-1", title: "Hips Don't Lie", length: 218000, "artist-credit": [{ name: "Shakira" }], releases: [] }], count: 1 } });
     request.mockResolvedValueOnce({ data: { data: [{ id: "audius-1", title: "Hips Don't Lie", duration: 218, release_date: "2024-01-01T00:00:00Z", user: { name: "Shakira", handle: "shakira" }, permalink: "open-artist/open-signal", artwork: { "1000x1000": "https://example.com/art.jpg" } }], total: 1 } });
     await expect(searchMusic("Shakira", 0)).resolves.toMatchObject({ source: "audius", items: [{ id: "audius-1", previewUrl: "https://api.audius.co/v1/tracks/audius-1/stream" }] });
     request.mockRestore();
+    probe.mockRestore();
   });
 
   it("uses Jamendo when Audius has no related playable result", async () => {
@@ -64,6 +66,7 @@ describe("music integrations", () => {
     process.env.SPOTIFY_CLIENT_SECRET = "";
     process.env.JAMENDO_CLIENT_ID = "test-client";
     const request = vi.spyOn(axios, "get");
+    const probe = vi.spyOn(axios, "request").mockResolvedValue({ status: 206, headers: { "content-type": "audio/mpeg", "content-length": "2" }, data: { destroy: vi.fn() } } as any);
     request.mockResolvedValueOnce({ data: { artists: [{ id: "artist-2", name: "Creative Artist" }] } });
     request.mockResolvedValueOnce({ data: { "release-groups": [], "release-group-count": 0 } });
     request.mockResolvedValueOnce({ data: { recordings: [{ id: "recording-2", title: "Open Signal", length: 180000, "artist-credit": [{ name: "Creative Artist" }], releases: [] }], count: 1 } });
@@ -80,6 +83,7 @@ describe("music integrations", () => {
     const semanticJamendo = { ...validJamendo, name: "Ambient Instrumental Relaxing Music", artist: "StimiBeats" };
     expect(matchesJamendoCandidate(freePrimary, semanticJamendo, interpretQuery("ambient instrumental relaxing music"), "ambient instrumental relaxing music")).toBe(true);
     request.mockRestore();
+    probe.mockRestore();
   });
 
   it("ignores an invalid Jamendo payload safely", async () => {
@@ -110,5 +114,30 @@ describe("music integrations", () => {
   it("returns a clear setup state for lyrics without a Genius token", async () => {
     delete process.env.GENIUS_ACCESS_TOKEN;
     await expect(getGeniusLyrics("Song", "Artist")).resolves.toMatchObject({ status: "not_configured", text: null, sourceUrl: null });
+  });
+});
+
+
+describe("probePlayableStream", () => {
+  it("rejects non-HTTPS and malformed URLs without a request", async () => {
+    await expect(probePlayableStream("javascript:alert(1)")).resolves.toMatchObject({ ok: false, reason: "invalid_url", method: "none" });
+  });
+
+  it("accepts an audio content type from HEAD", async () => {
+    const request = vi.spyOn(axios, "request").mockResolvedValueOnce({ status: 200, headers: { "content-type": "audio/mpeg" }, data: "" } as any);
+    await expect(probePlayableStream("https://audio.example/track.mp3")).resolves.toMatchObject({ ok: true, method: "HEAD", status: 200, contentType: "audio/mpeg", reason: "ok" });
+    expect(request).toHaveBeenCalledWith(expect.objectContaining({ method: "HEAD", timeout: 2_500 }));
+    request.mockRestore();
+  });
+
+  it("falls back to a bounded Range request when HEAD is rejected", async () => {
+    const stream = { destroy: vi.fn() };
+    const request = vi.spyOn(axios, "request")
+      .mockResolvedValueOnce({ status: 405, headers: { "content-type": "text/html" }, data: "" } as any)
+      .mockResolvedValueOnce({ status: 206, headers: { "content-type": "audio/ogg", "content-length": "2" }, data: stream } as any);
+    await expect(probePlayableStream("https://audio.example/track.ogg")).resolves.toMatchObject({ ok: true, method: "RANGE", status: 206, contentType: "audio/ogg", reason: "ok" });
+    expect(request).toHaveBeenLastCalledWith(expect.objectContaining({ method: "GET", headers: { Range: "bytes=0-1", Accept: "audio/*" }, maxContentLength: 8192 }));
+    expect(stream.destroy).toHaveBeenCalled();
+    request.mockRestore();
   });
 });
