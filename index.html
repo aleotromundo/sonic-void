@@ -6,8 +6,8 @@
     <title>Nowarfy - Música Ilimitada</title>
     <!-- Iconos -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- React Player (Motor de Audio) -->
-    <script src="https://cdn.jsdelivr.net/npm/react-player@latest/dist/ReactPlayer.min.js"></script>
+    <!-- Usamos una versión específica estable de ReactPlayer compatible con vanilla JS -->
+    <script src="https://unpkg.com/react-player@2.12.0/dist/ReactPlayer.standalone.js"></script>
     
     <style>
         :root {
@@ -16,13 +16,13 @@
             --bg-card: #181818;
             --text-white: #ffffff;
             --text-gray: #b3b3b3;
-            --accent: #1db954; /* Verde por defecto */
+            --accent: #1db954;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
-            font-family: 'Circular', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--bg-black);
             color: var(--text-white);
             height: 100vh;
@@ -93,6 +93,7 @@
             object-fit: cover;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             border-radius: 8px;
+            background-color: #333; /* Placeholder color */
         }
         .hero-info h1 { font-size: 3.5rem; font-weight: 900; margin-bottom: 10px; }
         .hero-info p { font-size: 1.1rem; color: var(--text-gray); }
@@ -121,6 +122,7 @@
             border-radius: 4px;
             margin-bottom: 16px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            background-color: #333;
         }
 
         .card-title { font-weight: 700; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -159,7 +161,7 @@
         }
 
         .player-left { display: flex; align-items: center; width: 30%; }
-        .player-img { width: 56px; height: 56px; margin-right: 15px; border-radius: 4px; display: none; }
+        .player-img { width: 56px; height: 56px; margin-right: 15px; border-radius: 4px; display: none; background-color: #333; }
         .track-info { display: flex; flex-direction: column; justify-content: center; }
         .track-name { font-size: 0.9rem; font-weight: 700; margin-bottom: 3px; }
         .artist-name { font-size: 0.75rem; color: var(--text-gray); }
@@ -256,6 +258,9 @@
 
     <script>
         // --- BASE DE DATOS ---
+        // Usamos imágenes de placeholder confiables si las originales fallan
+        const placeholderImg = "https://via.placeholder.com/300/121212/ffffff?text=Nowarfy";
+
         const dbYT = [
             { title: "Bohemian Rhapsody", artist: "Queen", img: "https://i.scdn.co/image/ab67616d0000b273ce4f1737bc8a646c8c4bd25a", url: "https://www.youtube.com/watch?v=fJ9rUzIMcZQ", type: "yt" },
             { title: "Smells Like Teen Spirit", artist: "Nirvana", img: "https://i.scdn.co/image/ab67616d0000b273e175a19e530c898d167d39bf", url: "https://www.youtube.com/watch?v=hTWKbfoikeg", type: "yt" },
@@ -263,9 +268,10 @@
             { title: "Billie Jean", artist: "Michael Jackson", img: "https://i.scdn.co/image/ab67616d0000b273de3c04b5fc750b68899b20a9", url: "https://www.youtube.com/watch?v=Zi_XLOBDo_Y", type: "yt" }
         ];
 
+        // URLs de ejemplo para MP3 libres (usando archivos de prueba públicos)
         const dbFree = [
-            { title: "Cyberpunk Dream", artist: "Laser Unicorn", img: "https://res.cloudinary.com/dmjq1y0qo/image/upload/c_fill,f_auto,h_300,q_auto,w_300/v1/jamendo-images/i3456789.jpg", url: "https://mp3d.jamendo.com/track/123456/download", type: "free" },
-            { title: "Acoustic Sunrise", artist: "Free Folk", img: "https://res.cloudinary.com/dmjq1y0qo/image/upload/c_fill,f_auto,h_300,q_auto,w_300/v1/jamendo-images/i9876543.jpg", url: "https://mp3d.jamendo.com/track/654321/download", type: "free" }
+            { title: "Cyberpunk Dream", artist: "Laser Unicorn", img: placeholderImg, url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", type: "free" },
+            { title: "Acoustic Sunrise", artist: "Free Folk", img: placeholderImg, url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3", type: "free" }
         ];
 
         let currentList = dbYT;
@@ -311,13 +317,15 @@
         function render() {
             const grid = document.getElementById('songGrid');
             grid.innerHTML = '';
-            document.getElementById('heroImg').src = currentList[0]?.img || '';
+            document.getElementById('heroImg').src = currentList[0]?.img || placeholderImg;
+            document.getElementById('heroImg').onerror = function() { this.src = placeholderImg; };
 
             currentList.forEach((song, idx) => {
                 const div = document.createElement('div');
                 div.className = 'card';
+                // Añadimos onerror a la imagen para evitar fallos de carga
                 div.innerHTML = `
-                    <img src="${song.img}" class="card-img" onerror="this.src='https://via.placeholder.com/150'">
+                    <img src="${song.img}" class="card-img" onerror="this.src='${placeholderImg}'">
                     <div class="play-btn"><i class="fas fa-play"></i></div>
                     <div class="card-title">${song.title}</div>
                     <div class="card-desc">${song.artist}</div>
@@ -337,37 +345,42 @@
             const img = document.getElementById('currentImg');
             img.src = song.img;
             img.style.display = 'block';
+            img.onerror = function() { this.src = placeholderImg; };
 
-            // Setup Player
+            // Setup Player - CORREGIDO: Usamos ReactPlayer directamente sin .default
             document.getElementById('hidden-player').innerHTML = '';
-            currentPlayer = new window.ReactPlayer.default('#hidden-player', {
-                url: song.url,
-                playing: true,
-                controls: false,
-                volume: 0.8,
-                onProgress: (state) => {
-                    if(state.duration) {
-                        const pct = (state.playedSeconds / state.duration) * 100;
-                        document.getElementById('progFill').style.width = pct + '%';
-                        document.getElementById('currTime').innerText = format(state.playedSeconds);
-                        document.getElementById('totalTime').innerText = format(state.duration);
-                    }
-                },
-                onReady: () => { isPlaying = true; updateIcon(); },
-                onEnded: () => nextSong()
-            });
+            
+            try {
+                currentPlayer = new ReactPlayer('#hidden-player', {
+                    url: song.url,
+                    playing: true,
+                    controls: false,
+                    volume: 0.8,
+                    onProgress: (state) => {
+                        if(state.duration) {
+                            const pct = (state.playedSeconds / state.duration) * 100;
+                            document.getElementById('progFill').style.width = pct + '%';
+                            document.getElementById('currTime').innerText = format(state.playedSeconds);
+                            document.getElementById('totalTime').innerText = format(state.duration);
+                        }
+                    },
+                    onReady: () => { isPlaying = true; updateIcon(); },
+                    onEnded: () => nextSong()
+                });
+            } catch (e) {
+                console.error("Error al iniciar el reproductor:", e);
+                alert("Error al cargar el reproductor. Recarga la página.");
+            }
         }
 
         function togglePlay() {
             if (!currentPlayer) return;
-            const iframe = document.querySelector('#hidden-player iframe');
-            const audio = document.querySelector('#hidden-player audio');
             
-            if (iframe) { // YouTube
-                const cmd = isPlaying ? 'pauseVideo' : 'playVideo';
-                iframe.contentWindow.postMessage(`{"event":"command","func":"${cmd}","args":""}`, '*');
-            } else if (audio) { // MP3
-                isPlaying ? audio.pause() : audio.play();
+            // ReactPlayer standalone expone métodos directos en la instancia
+            if (isPlaying) {
+                currentPlayer.pause();
+            } else {
+                currentPlayer.play();
             }
             isPlaying = !isPlaying;
             updateIcon();
@@ -386,8 +399,11 @@
         }
 
         function stopPlayer() {
+            if(currentPlayer) {
+                currentPlayer.pause();
+                currentPlayer = null;
+            }
             document.getElementById('hidden-player').innerHTML = '';
-            currentPlayer = null;
             isPlaying = false;
             updateIcon();
             document.getElementById('progFill').style.width = '0%';
