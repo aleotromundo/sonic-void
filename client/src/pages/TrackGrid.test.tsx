@@ -25,6 +25,9 @@ describe("TrackGrid Jamendo", () => {
           spotifyUrl: "https://www.jamendo.com/track/jamendo-1",
           previewUrl: "https://prod-1.storage.jamendo.com/stream.mp3",
           availableMarkets: [],
+          licenseLabel: "Creative Commons / Jamendo",
+          attribution: "Open Artist · Jamendo",
+          licenseUrl: "https://www.jamendo.com/track/jamendo-1",
           matchMode: "discovery",
         }]}
         favorites={[]}

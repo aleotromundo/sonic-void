@@ -13,6 +13,10 @@ export type LocalQueueItem = {
   spotifyUrl: string;
   previewUrl: string | null;
   availableMarkets: string[];
+  licenseLabel: string;
+  attribution: string;
+  licenseUrl: string | null;
+  matchMode?: "strict" | "discovery";
 };
 
 export type LocalPlaylist = {

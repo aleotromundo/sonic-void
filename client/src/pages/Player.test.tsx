@@ -5,7 +5,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Player } from "./Home";
 
-const track = { id: "audius-1", source: "audius" as const, kind: "track" as const, name: "Open Signal", artist: "Open Artist", album: "Audius", releaseYear: "2024", durationMs: 120000, durationLabel: "2:00", popularity: 0, imageUrl: null, spotifyUrl: "https://audius.co/open-artist/open-signal", previewUrl: "https://api.audius.co/v1/tracks/audius-1/stream", availableMarkets: [] };
+const track = { id: "audius-1", source: "audius" as const, kind: "track" as const, name: "Open Signal", artist: "Open Artist", album: "Audius", releaseYear: "2024", durationMs: 120000, durationLabel: "2:00", popularity: 0, imageUrl: null, spotifyUrl: "https://audius.co/open-artist/open-signal", previewUrl: "https://api.audius.co/v1/tracks/audius-1/stream", availableMarkets: [], licenseLabel: "Licencia indicada por el creador", attribution: "Open Artist · Audius", licenseUrl: "https://audius.co/open-artist/open-signal" };
 const baseProps = { active: true, track, lyricLine: undefined, currentTime: 0, duration: 0, volume: 0.8, onTimeUpdate: vi.fn(), onLoadedMetadata: vi.fn(), onVolumeChange: vi.fn(), onNext: vi.fn(), onPrevious: vi.fn(), onClose: vi.fn() };
 
 afterEach(() => cleanup());

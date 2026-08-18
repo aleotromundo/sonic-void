@@ -160,3 +160,13 @@
 - [x] Agregar prueba RTL de renderizado de tarjeta Jamendo con etiqueta `Jamendo · descubrimiento` y registrar evidencia textual
 - [x] Optimizar consultas libres para mostrar Jamendo rápidamente cuando la cadena primaria está lenta
 - [x] Estabilizar los inputs de búsqueda y letras para evitar refetches infinitos en la vista por URL
+- [x] Auditar el modelo actual de cola y los campos de licencia/atribución
+- [x] Revisar music.youtube.com como referencia pública de navegación, cola y controles
+- [x] Adaptar patrones de YouTube Music sin copiar marca, código, assets ni contenido
+- [x] Filtrar la cola para mostrar únicamente pistas con previewUrl reproducible
+- [x] Garantizar una selección inicial visible cuando la cola esté vacía
+- [x] Mostrar licencia, atribución y enlace oficial en cada elemento de la cola
+- [x] Añadir controles visibles de cola y pruebas de filtrado/persistencia/responsive
+- [x] Probar que localStorage conserva licencia, atribución y enlace legal de cada pista reproducible
+- [x] Probar en RTL la estructura responsive de la cola sin depender de screenshots no auditables
+- [ ] Guardar checkpoint de la nueva cola visible
