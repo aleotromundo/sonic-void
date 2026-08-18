@@ -313,3 +313,15 @@
 - [x] Mantener fuente, licencia, atribución y estado de audio sin convertirlos en filtros decorativos.
 - [x] Añadir o actualizar pruebas para confirmar que la búsqueda simple no renderiza filtros.
 - [x] Verificar y publicar la simplificación del catálogo.
+
+- [x] Reordenar la home para abrir con cinco círculos visuales de estaciones.
+- [x] Añadir fila tipo Netflix “Más escuchado” con pistas reales reproducibles.
+- [x] Añadir fila “Recomendados” basada en catálogo real disponible.
+- [x] Añadir fila “Seguí vos” basada en historial, cola o biblioteca local sin inventar datos.
+- [x] Mantener Play interno, atribución y estados honestos en las tres filas.
+- [x] Validar responsive, autoplay por estación y publicar la nueva home.
+
+- [x] Mantener una identidad visual y técnica propia mientras se incorporan patrones de navegación de Spotify y YouTube Music.
+- [x] Priorizar reproducción directa, filas de descubrimiento, cola persistente y navegación contextual como referencias de experiencia.
+- [x] Evitar copiar logos, textos, código, assets, marca o contenido protegido de servicios externos.
+- [x] Documentar y validar la próxima mejora de nowarfy sobre fuentes legales y pistas reproducibles.

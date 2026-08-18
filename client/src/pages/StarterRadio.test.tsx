@@ -2,7 +2,7 @@
 import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
-import { StarterRadio, type Track } from "./Home";
+import { HomeRows, StarterRadio, type Track } from "./Home";
 
 const playableTrack: Track = {
   id: "starter-1",
@@ -38,6 +38,21 @@ describe("StarterRadio", () => {
     fireEvent.click(screen.getAllByRole("button", { name: /Afterglow/i })[0]);
     expect(onStationSelect).toHaveBeenCalledWith(station);
     fireEvent.click(screen.getByRole("button", { name: /Play · Afterglow/i }));
+    expect(onPlay).toHaveBeenCalledWith(playableTrack);
+  });
+});
+
+describe("HomeRows", () => {
+  it("renders Netflix-style rows with playable tracks and an honest empty continuation", () => {
+    const onPlay = vi.fn();
+    const station = { name: "Relax", query: "ambient", detail: "Ambient", artUrl: "/manus-storage/nowarfy-relax_53529c0a.jpg", tracks: [playableTrack] };
+    render(<HomeRows stations={[station]} continueTracks={[]} onPlay={onPlay} />);
+    expect(screen.getByText("Más escuchado")).toBeTruthy();
+    expect(screen.getByText("Recomendados")).toBeTruthy();
+    expect(screen.getByText("Seguí vos")).toBeTruthy();
+    expect(screen.getAllByText("Night Signal").length).toBeGreaterThanOrEqual(2);
+    expect(screen.getByText("Todavía no hay una cola local. Elegí una estación para empezar.")).toBeTruthy();
+    fireEvent.click(screen.getAllByRole("button", { name: /Night Signal/i })[0]);
     expect(onPlay).toHaveBeenCalledWith(playableTrack);
   });
 });
