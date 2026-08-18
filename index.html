@@ -192,17 +192,17 @@
     </div>
 
     <script>
-        // --- DATOS CON IMÁGENES REALES ---
+        // --- DATOS CON IMÁGENES ESTABLES (Wikimedia/Wikidata) ---
         const dbYT = [
-            { title: "Bohemian Rhapsody", artist: "Queen", img: "https://i.scdn.co/image/ab67616d0000b273ce4f1737bc8a646c8c4bd25a", url: "fJ9rUzIMcZQ", type: "yt" },
-            { title: "Smells Like Teen Spirit", artist: "Nirvana", img: "https://i.scdn.co/image/ab67616d0000b273e175a19e530c898d167d39bf", url: "hTWKbfoikeg", type: "yt" },
-            { title: "Sweet Child O' Mine", artist: "Guns N' Roses", img: "https://i.scdn.co/image/ab67616d0000b27321ebf52088e17992674527a9", url: "1w7OgIMMRc4", type: "yt" },
-            { title: "Billie Jean", artist: "Michael Jackson", img: "https://i.scdn.co/image/ab67616d0000b273de3c04b5fc750b68899b20a9", url: "Zi_XLOBDo_Y", type: "yt" }
+            { title: "Bohemian Rhapsody", artist: "Queen", img: "https://upload.wikimedia.org/wikipedia/en/9/9f/Bohemian_Rhapsody.jpg", url: "fJ9rUzIMcZQ", type: "yt" },
+            { title: "Smells Like Teen Spirit", artist: "Nirvana", img: "https://upload.wikimedia.org/wikipedia/en/b/b7/NirvanaNevermindalbumcover.jpg", url: "hTWKbfoikeg", type: "yt" },
+            { title: "Sweet Child O' Mine", artist: "Guns N' Roses", img: "https://upload.wikimedia.org/wikipedia/commons/9/98/Guns_N%27_Roses_-_Appetite_for_Destruction.png", url: "1w7OgIMMRc4", type: "yt" },
+            { title: "Billie Jean", artist: "Michael Jackson", img: "https://upload.wikimedia.org/wikipedia/en/d/d8/Michael_Jackson_Thriller_album_cover.jpg", url: "Zi_XLOBDo_Y", type: "yt" }
         ];
 
         const dbFree = [
-            { title: "Cyberpunk Dream", artist: "Laser Unicorn", img: "https://via.placeholder.com/300/00d4ff/ffffff?text=Indie", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", type: "free" },
-            { title: "Acoustic Sunrise", artist: "Free Folk", img: "https://via.placeholder.com/300/00d4ff/ffffff?text=Folk", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3", type: "free" }
+            { title: "Cyberpunk Dream", artist: "Laser Unicorn", img: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'%3E%3Crect width='300' height='300' fill='%2300d4ff'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='24' fill='white'%3EIndie%3C/text%3E%3C/svg%3E", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", type: "free" },
+            { title: "Acoustic Sunrise", artist: "Free Folk", img: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'%3E%3Crect width='300' height='300' fill='%2300d4ff'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='24' fill='white'%3EFolk%3C/text%3E%3C/svg%3E", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3", type: "free" }
         ];
 
         let currentList = dbYT;
@@ -253,13 +253,12 @@
             // Cargar imagen del hero
             const firstSong = currentList[0];
             document.getElementById('heroImg').src = firstSong.img;
-            document.getElementById('heroImg').onerror = function() { this.src = 'https://via.placeholder.com/200?text=No+Image'; };
 
             currentList.forEach((song, idx) => {
                 const div = document.createElement('div');
                 div.className = 'card';
                 div.innerHTML = `
-                    <img src="${song.img}" class="card-img" onerror="this.src='https://via.placeholder.com/150?text=No+Image'">
+                    <img src="${song.img}" class="card-img">
                     <div class="play-btn"><i class="fas fa-play"></i></div>
                     <div class="card-title">${song.title}</div>
                     <div class="card-desc">${song.artist}</div>
@@ -291,7 +290,6 @@
             const imgDiv = document.getElementById('currentImg');
             imgDiv.src = song.img;
             imgDiv.style.display = 'block';
-            imgDiv.onerror = function() { this.src = 'https://via.placeholder.com/56?text=?'; };
 
             stopAll();
 
@@ -340,14 +338,13 @@
             isPlaying = true;
             updateIcon();
             if (progressInterval) clearInterval(progressInterval);
-            // Actualizar cada segundo
             progressInterval = setInterval(() => {
                 if(ytPlayer && ytPlayer.getCurrentTime) {
                     const curr = ytPlayer.getCurrentTime();
                     const dur = ytPlayer.getDuration();
                     if(dur > 0) updateProgress(curr, dur);
                 }
-            }, 500); // Cada 500ms para mayor fluidez
+            }, 500);
         }
 
         function onYTStateChange(event) {
