@@ -352,7 +352,7 @@
 
 - [x] Reproducir y aislar `FUNCTION_INVOCATION_FAILED` en `/api/trpc/auth.me` del dominio público.
 - [x] Corregir el entrypoint serverless para que Vercel inicialice Express/tRPC sin depender del listener local.
-- [ ] Validar `/api/trpc/auth.me`, estado de proveedores y búsqueda real en Vercel después del fix.
+- [x] Validar `/api/trpc/auth.me`, estado de proveedores y búsqueda real en Vercel después del fix.
 
 - [x] Centrar las cinco esferas en el hero y mejorar su composición visual.
 - [x] Añadir rotación y respuesta táctil accesible al interactuar con cada esfera.
@@ -400,9 +400,9 @@
 - [x] Priorizar la carga del catálogo Openverse en la home antes de iniciar búsquedas lentas de estaciones
 - [x] Verificar visualmente que el contador y la lista muestran pistas reproducibles tras la carga prioritaria
 - [x] Guardar checkpoint con la corrección de carga prioritaria y pruebas actualizadas
-- [ ] Diagnosticar por qué Vercel muestra una versión anterior a Manus/GitHub
-- [ ] Verificar rama, commit y configuración de build del proyecto Vercel
-- [ ] Confirmar la versión pública de Vercel o documentar la acción manual necesaria
+- [x] Diagnosticar por qué Vercel muestra una versión anterior a Manus/GitHub
+- [x] Verificar rama, commit y configuración de build del proyecto Vercel
+- [x] Confirmar la versión pública de Vercel o documentar la acción manual necesaria
 - [x] Auditar funciones y flujos de Spotify, YouTube Music, Apple Music, Deezer, SoundCloud y radios abiertas
 - [x] Comparar la auditoría con nowarfy: búsqueda, descubrimiento, playback, cola, biblioteca, letras, carátulas, visuales, accesibilidad y estados de error
 - [x] Diseñar roadmap gratuito y legal priorizado por impacto y viabilidad
@@ -420,3 +420,5 @@
 - [x] Mapear esos patrones a nowarfy sin incorporar descarga o retransmisión no autorizada
 - [x] Implementar las mejoras compatibles en metadata, cola y biblioteca local
 - [x] Validar pruebas, interfaz y documentación de límites
+- [ ] Corregir el rewrite global de Vercel para que `/api/trpc` llegue al handler serverless y no devuelva la SPA
+- [ ] Verificar públicamente `auth.me` y `music.openCatalog` después de corregir el routing de Vercel
