@@ -26,10 +26,17 @@ export type LocalPlaylist = {
   createdAt: number;
 };
 
+export type LocalHistoryItem = {
+  track: LocalQueueItem;
+  playedAt: number;
+  plays: number;
+};
+
 export type LocalLibraryState = {
   favorites: string[];
   queue: LocalQueueItem[];
   playlists: LocalPlaylist[];
+  history: LocalHistoryItem[];
   preferences: { volume: number; compact: boolean; muted: boolean };
 };
 
@@ -37,7 +44,7 @@ export type LocalStationCatalog = Record<string, { updatedAt: number; tracks: Lo
 
 const KEY = "sonic-void-library-v1";
 const CATALOG_KEY = "sonic-void-station-catalog-v1";
-const fallback: LocalLibraryState = { favorites: [], queue: [], playlists: [], preferences: { volume: 0.8, compact: false, muted: false } };
+const fallback: LocalLibraryState = { favorites: [], queue: [], playlists: [], history: [], preferences: { volume: 0.8, compact: false, muted: false } };
 
 export function loadLocalLibrary(): LocalLibraryState {
   if (typeof window === "undefined") return fallback;
@@ -49,6 +56,7 @@ export function loadLocalLibrary(): LocalLibraryState {
       favorites: Array.isArray(stored.favorites) ? stored.favorites : [],
       queue: Array.isArray(stored.queue) ? stored.queue : [],
       playlists: Array.isArray(stored.playlists) ? stored.playlists : [],
+      history: Array.isArray(stored.history) ? stored.history.filter((item: any) => item?.track?.previewUrl) : [],
       preferences: { ...fallback.preferences, ...(stored.preferences || {}) },
     } as LocalLibraryState;
   } catch {

@@ -403,3 +403,8 @@
 - [ ] Diagnosticar por qué Vercel muestra una versión anterior a Manus/GitHub
 - [ ] Verificar rama, commit y configuración de build del proyecto Vercel
 - [ ] Confirmar la versión pública de Vercel o documentar la acción manual necesaria
+- [x] Auditar funciones y flujos de Spotify, YouTube Music, Apple Music, Deezer, SoundCloud y radios abiertas
+- [x] Comparar la auditoría con nowarfy: búsqueda, descubrimiento, playback, cola, biblioteca, letras, carátulas, visuales, accesibilidad y estados de error
+- [x] Diseñar roadmap gratuito y legal priorizado por impacto y viabilidad
+- [x] Implementar el primer bloque de mejoras críticas derivado de la auditoría
+- [x] Validar el bloque implementado con pruebas, captura visual y despliegues

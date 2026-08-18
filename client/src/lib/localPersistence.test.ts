@@ -23,9 +23,10 @@ describe("local library persistence", () => {
     (globalThis as { window?: unknown }).window = { localStorage: localStorageMock };
     const state = loadLocalLibrary();
     const track = { id: "track-1", source: "jamendo" as const, kind: "track" as const, name: "Signal", artist: "Artist", album: "Album", releaseYear: "2026", durationMs: 180000, durationLabel: "3:00", popularity: 0, imageUrl: null, spotifyUrl: "https://www.jamendo.com/track/track-1", previewUrl: "https://cdn.jamendo.com/track-1.mp3", availableMarkets: [], licenseLabel: "Creative Commons / Jamendo", attribution: "Artist · Jamendo", licenseUrl: "https://creativecommons.org/licenses/by/4.0/" };
-    saveLocalLibrary({ ...state, queue: [track], playlists: [{ id: "playlist-1", name: "Night drive", trackIds: [track.id], createdAt: 1 }] });
+    saveLocalLibrary({ ...state, queue: [track], history: [{ track, playedAt: 123, plays: 2 }], playlists: [{ id: "playlist-1", name: "Night drive", trackIds: [track.id], createdAt: 1 }] });
     const restored = loadLocalLibrary();
     expect(restored.queue[0]).toMatchObject({ id: "track-1", previewUrl: "https://cdn.jamendo.com/track-1.mp3", licenseLabel: "Creative Commons / Jamendo", attribution: "Artist · Jamendo", licenseUrl: "https://creativecommons.org/licenses/by/4.0/" });
     expect(restored.playlists[0]).toMatchObject({ name: "Night drive", trackIds: ["track-1"] });
+    expect(restored.history[0]).toMatchObject({ playedAt: 123, plays: 2, track: { id: "track-1", licenseLabel: "Creative Commons / Jamendo", attribution: "Artist · Jamendo" } });
   });
 });
