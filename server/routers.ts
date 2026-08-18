@@ -1,9 +1,9 @@
 import { z } from "zod";
-import { COOKIE_NAME } from "../shared/const";
-import { getSessionCookieOptions } from "./_core/cookies";
-import { systemRouter } from "./_core/systemRouter";
-import { publicProcedure, router } from "./_core/trpc";
-import { getAudioProviderHealth, getLrclibLyrics, isSpotifyConfigured, searchMusic, searchOpenCatalog } from "./music";
+import { COOKIE_NAME } from "../shared/const.js";
+import { getSessionCookieOptions } from "./_core/cookies.js";
+import { systemRouter } from "./_core/systemRouter.js";
+import { publicProcedure, router } from "./_core/trpc.js";
+import { getAudioProviderHealth, getLrclibLyrics, isSpotifyConfigured, searchMusic, searchOpenCatalog } from "./music.js";
 
 export const appRouter = router({
   system: systemRouter,

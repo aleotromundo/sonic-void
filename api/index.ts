@@ -1,10 +1,10 @@
 import express, { type Express } from "express";
 import type { Request, Response } from "express";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
-import { appRouter } from "../server/routers";
-import { createContext } from "../server/_core/context";
-import { registerOAuthRoutes } from "../server/_core/oauth";
-import { registerStorageProxy } from "../server/_core/storageProxy";
+import { appRouter } from "../server/routers.js";
+import { createContext } from "../server/_core/context.js";
+import { registerOAuthRoutes } from "../server/_core/oauth.js";
+import { registerStorageProxy } from "../server/_core/storageProxy.js";
 
 let app: Express | undefined;
 
