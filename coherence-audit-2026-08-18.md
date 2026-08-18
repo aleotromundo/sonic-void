@@ -34,3 +34,9 @@ TypeScript pasó y Vitest quedó en 48 pruebas aprobadas con 3 pruebas externas 
 ## Capturas del pulido
 
 Las capturas local de escritorio y móvil mantienen los cinco círculos dentro del hero, las tres filas en orden y la línea de reproducción fija sin desbordar el viewport. En móvil, la navegación lateral se oculta correctamente, las tarjetas de accesos rápidos se apilan y el player permanece visible al final. Las cinco artes se cargan localmente desde las rutas persistentes nuevas; Vercel debe volver a verificarse después del siguiente push.
+
+## Verificación de despliegue posterior al pulido
+
+El push de `c1013d9e` llegó correctamente a `aleotromundo/sonic-void` en `main`. En Vercel, el panel consultado después del push todavía muestra `cbd07df` como Production Deployment en estado Ready; por lo tanto, no se debe afirmar que c1013d9e ya esté en producción. El dominio `nowarfy.vercel.app` carga la SPA, muestra los cinco botones de estación, las filas y Full Signal, pero la confirmación textual no permite verificar el arte de cada círculo en esta consulta.
+
+Vercel registra 605 edge requests, 192 invocaciones y una tasa de error histórica del 100 %. Ese dato debe tratarse como observabilidad acumulada y no como prueba aislada de que la SPA actual esté caída; falta revisar el endpoint tRPC y los logs del deployment nuevo cuando Vercel lo detecte.

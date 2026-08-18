@@ -220,8 +220,8 @@
 - [x] Mostrar una sección visible de “A continuación” con las pistas ya preparadas por autoplay.
 - [x] Añadir pruebas RTL para volumen, silencio y lista de próximas pistas.
 
-- [ ] Diagnosticar el fallo persistente del despliegue Vercel y reproducirlo en el dominio público.
-- [ ] Corregir entrypoint, rutas, build o configuración de variables que impidan cargar la SPA y tRPC en Vercel.
+- [x] Diagnosticar el fallo persistente del despliegue Vercel y reproducirlo en el dominio público.
+- [x] Corregir entrypoint, rutas, build o configuración de variables que impidan cargar la SPA y tRPC en Vercel.
 - [ ] Validar el despliegue Vercel corregido y documentar cualquier variable que el usuario deba cargar manualmente.
 
 - [x] Reproducir y diagnosticar la regresión que dejó la búsqueda sin resultados en Manus Space.
@@ -349,3 +349,7 @@
 - [ ] Estabilizar Jamendo/Audius y preparar una integración experimental de ccMixter solo si supera las validaciones.
 - [x] Refinar home, player, Full Signal, accesibilidad y responsive.
 - [ ] Validar local, Manus Space, GitHub y Vercel, documentando cualquier límite restante.
+
+- [x] Reproducir y aislar `FUNCTION_INVOCATION_FAILED` en `/api/trpc/auth.me` del dominio público.
+- [x] Corregir el entrypoint serverless para que Vercel inicialice Express/tRPC sin depender del listener local.
+- [ ] Validar `/api/trpc/auth.me`, estado de proveedores y búsqueda real en Vercel después del fix.
