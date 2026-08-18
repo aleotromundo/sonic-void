@@ -115,8 +115,9 @@
         }
         .progress-fill { height: 100%; background: var(--accent); border-radius: 2px; width: 0%; }
 
-        /* Audio oculto */
+        /* Contenedores ocultos */
         #audio-element { display: none; }
+        #yt-player-container { display: none; }
         
         .source-badge {
             position: fixed; top: 20px; right: 20px; background: rgba(0,0,0,0.7); padding: 8px 15px;
@@ -181,10 +182,9 @@
         <div style="width:30%"></div>
     </div>
 
-    <!-- Elemento de Audio Nativo -->
+    <!-- Elementos Multimedia -->
     <audio id="audio-element" preload="metadata"></audio>
-    <!-- Contenedor para iframe de YouTube -->
-    <div id="yt-frame-container" style="display:none;"></div>
+    <div id="yt-player-container"></div>
     
     <div class="source-badge" id="sourceBadge">
         <div class="dot dot-yt" id="sourceDot"></div>
@@ -194,10 +194,10 @@
     <script>
         // --- DATOS ---
         const dbYT = [
-            { title: "Bohemian Rhapsody", artist: "Queen", icon: "fa-crown", url: "https://www.youtube.com/watch?v=fJ9rUzIMcZQ", type: "yt" },
-            { title: "Smells Like Teen Spirit", artist: "Nirvana", icon: "fa-skull", url: "https://www.youtube.com/watch?v=hTWKbfoikeg", type: "yt" },
-            { title: "Sweet Child O' Mine", artist: "Guns N' Roses", icon: "fa-guitar", url: "https://www.youtube.com/watch?v=1w7OgIMMRc4", type: "yt" },
-            { title: "Billie Jean", artist: "Michael Jackson", icon: "fa-user-astronaut", url: "https://www.youtube.com/watch?v=Zi_XLOBDo_Y", type: "yt" }
+            { title: "Bohemian Rhapsody", artist: "Queen", icon: "fa-crown", url: "fJ9rUzIMcZQ", type: "yt" },
+            { title: "Smells Like Teen Spirit", artist: "Nirvana", icon: "fa-skull", url: "hTWKbfoikeg", type: "yt" },
+            { title: "Sweet Child O' Mine", artist: "Guns N' Roses", icon: "fa-guitar", url: "1w7OgIMMRc4", type: "yt" },
+            { title: "Billie Jean", artist: "Michael Jackson", icon: "fa-user-astronaut", url: "Zi_XLOBDo_Y", type: "yt" }
         ];
 
         const dbFree = [
@@ -211,11 +211,12 @@
         let currentMode = 'yt';
         
         const audioEl = document.getElementById('audio-element');
-        const ytContainer = document.getElementById('yt-frame-container');
         let ytPlayer = null;
+        let progressInterval = null;
 
         // Inicializar
         render();
+        loadYouTubeAPI();
 
         function setMode(mode) {
             currentMode = mode;
@@ -265,6 +266,19 @@
             });
         }
 
+        function loadYouTubeAPI() {
+            if (window.YT && window.YT.Player) return; // Ya cargada
+            
+            const tag = document.createElement('script');
+            tag.src = "https://www.youtube.com/iframe_api";
+            const firstScriptTag = document.getElementsByTagName('script')[0];
+            firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+            
+            window.onYouTubeIframeAPIReady = function() {
+                console.log("YouTube API Ready");
+            };
+        }
+
         function play(idx) {
             currentIndex = idx;
             const song = currentList[idx];
@@ -285,43 +299,36 @@
                     updateIcon();
                 }).catch(e => console.error("Error audio:", e));
                 
-                audioEl.onprogress = () => updateProgress(audioEl.currentTime, audioEl.duration);
                 audioEl.ontimeupdate = () => updateProgress(audioEl.currentTime, audioEl.duration);
                 audioEl.onended = () => nextSong();
 
             } else {
-                // Modo YouTube (Iframe API)
-                loadYouTube(song.url);
-            }
-        }
-
-        function loadYouTube(videoId) {
-            // Extraer ID si es URL completa
-            let id = videoId.split('v=')[1];
-            if(!id) id = videoId;
-
-            // Cargar API de YouTube si no existe
-            if (!window.YT) {
-                const tag = document.createElement('script');
-                tag.src = "https://www.youtube.com/iframe_api";
-                document.body.appendChild(tag);
-                window.onYouTubeIframeAPIReady = () => initYTPlayer(id);
-            } else {
-                initYTPlayer(id);
+                // Modo YouTube usando API Oficial
+                if (window.YT && window.YT.Player) {
+                    initYTPlayer(song.url);
+                } else {
+                    // Si la API aún no cargó, esperamos un poco y reintentamos (raro pero posible)
+                    setTimeout(() => initYTPlayer(song.url), 500);
+                }
             }
         }
 
         function initYTPlayer(videoId) {
-            ytContainer.innerHTML = '<div id="yt-player"></div>';
+            document.getElementById('yt-player-container').innerHTML = '<div id="yt-player"></div>';
+            
             ytPlayer = new YT.Player('yt-player', {
                 height: '0',
                 width: '0',
                 videoId: videoId,
-                playerVars: { 'autoplay': 1, 'controls': 0 },
+                playerVars: { 
+                    'autoplay': 1, 
+                    'controls': 0,
+                    'enablejsapi': 1,
+                    'origin': window.location.origin 
+                },
                 events: {
                     'onReady': onYTReady,
-                    'onStateChange': onYTStateChange,
-                    'onEnded': () => nextSong()
+                    'onStateChange': onYTStateChange
                 }
             });
         }
@@ -329,13 +336,21 @@
         function onYTReady() {
             isPlaying = true;
             updateIcon();
-            setInterval(updateYTProgress, 1000);
+            // Iniciar intervalo para la barra de progreso
+            if (progressInterval) clearInterval(progressInterval);
+            progressInterval = setInterval(updateYTProgress, 1000);
         }
 
         function onYTStateChange(event) {
-            if (event.data === YT.PlayerState.PLAYING) isPlaying = true;
-            if (event.data === YT.PlayerState.PAUSED) isPlaying = false;
-            if (event.data === YT.PlayerState.ENDED) nextSong();
+            if (event.data === YT.PlayerState.PLAYING) {
+                isPlaying = true;
+                if (!progressInterval) progressInterval = setInterval(updateYTProgress, 1000);
+            } else if (event.data === YT.PlayerState.PAUSED) {
+                isPlaying = false;
+            } else if (event.data === YT.PlayerState.ENDED) {
+                isPlaying = false;
+                nextSong();
+            }
             updateIcon();
         }
 
@@ -343,12 +358,12 @@
             if(ytPlayer && ytPlayer.getCurrentTime) {
                 const curr = ytPlayer.getCurrentTime();
                 const dur = ytPlayer.getDuration();
-                updateProgress(curr, dur);
+                if(dur > 0) updateProgress(curr, dur);
             }
         }
 
         function updateProgress(curr, dur) {
-            if(dur) {
+            if(dur && dur > 0) {
                 const pct = (curr / dur) * 100;
                 document.getElementById('progFill').style.width = pct + '%';
                 document.getElementById('currTime').innerText = format(curr);
@@ -384,10 +399,23 @@
         function stopAll() {
             audioEl.pause();
             audioEl.src = "";
-            if (ytPlayer) { ytPlayer.destroy(); ytPlayer = null; }
+            
+            if (ytPlayer) { 
+                ytPlayer.stopVideo(); 
+                ytPlayer.destroy(); 
+                ytPlayer = null; 
+            }
+            
+            if (progressInterval) {
+                clearInterval(progressInterval);
+                progressInterval = null;
+            }
+
             isPlaying = false;
             updateIcon();
             document.getElementById('progFill').style.width = '0%';
+            document.getElementById('currTime').innerText = "0:00";
+            document.getElementById('totalTime').innerText = "0:00";
         }
 
         function updateIcon() {
@@ -395,7 +423,7 @@
         }
 
         function format(sec) {
-            if(!sec) return "0:00";
+            if(!sec || sec < 0) return "0:00";
             const m = Math.floor(sec / 60);
             const s = Math.floor(sec % 60);
             return `${m}:${s < 10 ? '0'+s : s}`;
