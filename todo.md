@@ -383,7 +383,7 @@
 - [ ] Separar encontradas, licencia verificable y reproducibles ahora en el contador.
 - [ ] Mantener Play y atribución como únicos filtros técnicos obligatorios.
 
-- [ ] Reinvestigar Openverse Audio y sus proveedores con los nuevos criterios de volumen, licencia y Play real.
+- [x] Reinvestigar Openverse Audio y sus proveedores con los nuevos criterios de volumen, licencia y Play real.
 - [ ] Probar fuentes candidatas adicionales y sus streams con una muestra representativa.
 - [ ] Comparar volumen indexado, licencia, atribución, estabilidad y restricciones de uso.
 - [ ] Actualizar la decisión de integración de fuentes antes de modificar nowarfy.
@@ -397,9 +397,9 @@
 - [ ] Mostrar junto a la lista un contador calculado sobre pistas reales con Play funcional.
 - [ ] Mantener visibles y centradas las cinco esferas con rotación táctil y Play directo.
 - [ ] Validar responsive, estados vacíos y accesibilidad de la nueva composición.
-- [ ] Priorizar la carga del catálogo Openverse en la home antes de iniciar búsquedas lentas de estaciones
-- [ ] Verificar visualmente que el contador y la lista muestran pistas reproducibles tras la carga prioritaria
-- [ ] Guardar checkpoint con la corrección de carga prioritaria y pruebas actualizadas
+- [x] Priorizar la carga del catálogo Openverse en la home antes de iniciar búsquedas lentas de estaciones
+- [x] Verificar visualmente que el contador y la lista muestran pistas reproducibles tras la carga prioritaria
+- [x] Guardar checkpoint con la corrección de carga prioritaria y pruebas actualizadas
 - [ ] Diagnosticar por qué Vercel muestra una versión anterior a Manus/GitHub
 - [ ] Verificar rama, commit y configuración de build del proyecto Vercel
 - [ ] Confirmar la versión pública de Vercel o documentar la acción manual necesaria
