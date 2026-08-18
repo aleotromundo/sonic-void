@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nowarfy - Música Ilimitada</title>
+    <title>Nowarfy - Radio Ilimitada</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
@@ -11,15 +11,17 @@
             --bg-black: #000000;
             --bg-dark: #121212;
             --bg-card: #181818;
+            --bg-hover: #282828;
             --text-white: #ffffff;
             --text-gray: #b3b3b3;
-            --accent: #1db954;
+            --spotify-green: #1db954;
+            --spotify-green-hover: #1ed760;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
-            font-family: 'Segoe UI', sans-serif;
+            font-family: 'Circular', 'Helvetica Neue', Helvetica, Arial, sans-serif;
             background-color: var(--bg-black);
             color: var(--text-white);
             height: 100vh;
@@ -30,6 +32,7 @@
 
         .main-container { display: flex; flex: 1; overflow: hidden; }
         
+        /* SIDEBAR */
         .sidebar {
             width: 240px;
             background-color: var(--bg-black);
@@ -40,123 +43,132 @@
         }
 
         .logo { font-size: 1.8rem; font-weight: 800; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; color: white; }
-        .logo i { color: var(--accent); }
+        .logo i { color: var(--spotify-green); }
 
         .nav-links li {
             list-style: none; margin-bottom: 10px; cursor: pointer; padding: 10px; border-radius: 4px;
             color: var(--text-gray); font-weight: 700; display: flex; align-items: center; gap: 15px; transition: 0.3s;
         }
         .nav-links li:hover, .nav-links li.active { background-color: #282828; color: white; }
-        .nav-links li.active i { color: var(--accent); }
+        .nav-links li.active i { color: var(--spotify-green); }
 
+        /* CONTENIDO */
         .content-area {
-            flex: 1; background: linear-gradient(180deg, #2c2c2c 0%, var(--bg-dark) 40%);
-            overflow-y: auto; padding: 30px;
+            flex: 1; 
+            background: linear-gradient(180deg, #2c2c2c 0%, var(--bg-dark) 40%);
+            background-color: var(--bg-dark);
+            overflow-y: auto; 
+            padding: 30px;
+            position: relative;
         }
 
-        .hero { display: flex; align-items: end; gap: 20px; margin-bottom: 30px; }
-        .hero-img {
-            width: 200px; height: 200px; object-fit: cover; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            border-radius: 8px; background: #333;
-        }
-        .hero-info h1 { font-size: 3.5rem; font-weight: 900; margin-bottom: 10px; }
-        .hero-info p { font-size: 1.1rem; color: var(--text-gray); }
+        /* Buscador */
+        .search-container { position: sticky; top: 0; z-index: 50; background: rgba(18,18,18,0.95); padding: 10px 0; margin-bottom: 20px; backdrop-filter: blur(10px); }
+        .search-input { width: 100%; padding: 12px 20px; border-radius: 50px; border: none; background: #fff; color: #000; font-size: 1rem; outline: none; font-weight: bold; }
+        .search-input:focus { transform: scale(1.02); transition: 0.2s; }
 
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 24px; margin-top: 20px; }
+        /* Estados de Ánimo */
+        .mood-selector { display: flex; gap: 15px; margin-bottom: 30px; flex-wrap: wrap; }
+        .mood-btn {
+            flex: 1; min-width: 120px; padding: 15px; border-radius: 8px; border: none; cursor: pointer;
+            font-weight: bold; color: black; display: flex; align-items: center; justify-content: center; gap: 10px;
+            transition: transform 0.2s; font-size: 0.9rem;
+        }
+        .mood-btn:hover { transform: scale(1.05); }
+        .mood-energy { background: #ff4757; }
+        .mood-relax { background: #2ed573; }
+        .mood-party { background: #ffa502; }
+        .mood-sad { background: #5352ed; }
+        .mood-focus { background: #1e90ff; }
+
+        .section-title { margin-top: 30px; margin-bottom: 15px; font-size: 1.5rem; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+        .section-title i { color: var(--spotify-green); font-size: 1rem; }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 24px; }
 
         .card {
             background-color: var(--bg-card); padding: 16px; border-radius: 8px; cursor: pointer;
             transition: 0.3s; position: relative;
         }
-        .card:hover { background-color: #282828; transform: translateY(-5px); }
-        
-        .card-img {
-            width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 4px; margin-bottom: 16px;
-            background: #333;
-        }
-
-        .card-title { font-weight: 700; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .card:hover { background-color: var(--bg-hover); transform: translateY(-5px); }
+        .card-img { width: 100%; aspect-ratio: 16/9; object-fit: cover; border-radius: 4px; margin-bottom: 16px; background: #333; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .card-title { font-weight: 700; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.9rem; }
         .card-desc { font-size: 0.8rem; color: var(--text-gray); }
-
         .play-btn {
             position: absolute; right: 20px; bottom: 85px; width: 48px; height: 48px; border-radius: 50%;
-            background-color: var(--accent); display: flex; align-items: center; justify-content: center;
-            opacity: 0; transform: translateY(10px); transition: 0.3s; color: black; font-size: 1.2rem;
+            background-color: var(--spotify-green); display: flex; align-items: center; justify-content: center;
+            opacity: 0; transform: translateY(10px); transition: 0.3s; color: black; font-size: 1.2rem; box-shadow: 0 4px 10px rgba(0,0,0,0.4);
         }
         .card:hover .play-btn { opacity: 1; transform: translateY(0); }
+        .card:hover .play-btn:hover { background-color: var(--spotify-green-hover); transform: scale(1.05); }
 
+        /* PLAYER BAR */
         .player-bar {
             height: 90px; background-color: #181818; border-top: 1px solid #282828;
             padding: 0 20px; display: flex; align-items: center; justify-content: space-between; z-index: 100;
         }
 
         .player-left { display: flex; align-items: center; width: 30%; }
-        .player-img {
-            width: 56px; height: 56px; margin-right: 15px; border-radius: 4px; display: none;
-            background: #333; object-fit: cover;
-        }
+        .player-img { width: 56px; height: 56px; margin-right: 15px; border-radius: 4px; display: none; background: #333; object-fit: cover; }
         .track-info { display: flex; flex-direction: column; justify-content: center; }
-        .track-name { font-size: 0.9rem; font-weight: 700; margin-bottom: 3px; }
+        .track-name { font-size: 0.9rem; font-weight: 700; margin-bottom: 3px; color: white; }
         .artist-name { font-size: 0.75rem; color: var(--text-gray); }
-
+        .fav-btn { margin-left: 15px; color: var(--text-gray); cursor: pointer; font-size: 1.2rem; transition: 0.2s; }
+        .fav-btn.active { color: var(--spotify-green); }
+        .fav-btn:hover { transform: scale(1.2); color: white; }
+        
         .player-center { display: flex; flex-direction: column; align-items: center; width: 40%; }
         .controls { display: flex; align-items: center; gap: 20px; margin-bottom: 10px; }
         .btn-control { background: none; border: none; color: var(--text-gray); font-size: 1.1rem; cursor: pointer; }
         .btn-control:hover { color: white; }
-        .btn-play {
-            background: white; color: black; border-radius: 50%; width: 35px; height: 35px;
-            display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1rem;
-        }
+        .btn-play { background: white; color: black; border-radius: 50%; width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1rem; }
         .btn-play:hover { transform: scale(1.05); }
 
-        .progress-bar {
-            width: 100%; height: 4px; background: #535353; border-radius: 2px; cursor: pointer;
-            position: relative; display: flex; align-items: center; gap: 10px; font-size: 0.7rem; color: var(--text-gray);
-        }
-        .progress-fill { height: 100%; background: var(--accent); border-radius: 2px; width: 0%; transition: width 0.2s linear; }
+        .progress-bar { width: 100%; height: 4px; background: #535353; border-radius: 2px; cursor: pointer; position: relative; display: flex; align-items: center; gap: 10px; font-size: 0.7rem; color: var(--text-gray); }
+        .progress-fill { height: 100%; background: var(--text-gray); border-radius: 2px; width: 0%; transition: width 0.2s linear; }
+        .progress-bar:hover .progress-fill { background: var(--spotify-green); }
 
-        /* Contenedores ocultos */
-        #audio-element { display: none; }
         #yt-player-container { display: none; }
-        
-        .source-badge {
-            position: fixed; top: 20px; right: 20px; background: rgba(0,0,0,0.7); padding: 8px 15px;
-            border-radius: 20px; font-size: 0.8rem; border: 1px solid #333; z-index: 200;
-            display: flex; align-items: center; gap: 8px;
-        }
-        .dot { width: 8px; height: 8px; border-radius: 50%; }
-        .dot-yt { background: #ff0000; box-shadow: 0 0 8px #ff0000; }
-        .dot-free { background: #00d4ff; box-shadow: 0 0 8px #00d4ff; }
+        .loader { text-align: center; color: var(--text-gray); padding: 20px; display: none; }
+        .status-msg { position: fixed; top: 20px; right: 20px; background: rgba(0,0,0,0.8); padding: 10px 20px; border-radius: 20px; font-size: 0.8rem; z-index: 200; display: none; border: 1px solid #333; }
     </style>
 </head>
 <body>
 
     <div class="main-container">
+        <!-- SIDEBAR -->
         <div class="sidebar">
-            <div class="logo"><i class="fas fa-infinity"></i> Nowarfy</div>
+            <div class="logo"><i class="fab fa-spotify"></i> Nowarfy</div>
             <ul class="nav-links">
-                <li onclick="setMode('yt')" id="mode-yt" class="active">
-                    <i class="fab fa-youtube"></i> Éxitos (YouTube)
-                </li>
-                <li onclick="setMode('free')" id="mode-free">
-                    <i class="fas fa-music"></i> Indie/Libre (MP3)
-                </li>
+                <li onclick="resetView()" class="active"><i class="fas fa-home"></i> Inicio</li>
+                <li onclick="showSection('favorites')"><i class="fas fa-heart"></i> Favoritos <span id="favCount" style="margin-left:auto; font-size:0.8em;">0</span></li>
+                <li onclick="toggleShuffle()"><i class="fas fa-random" id="shuffleIcon" style="color:#777; margin-left:auto;"></i> Aleatorio</li>
             </ul>
         </div>
 
+        <!-- CONTENIDO -->
         <div class="content-area">
-            <div class="hero">
-                <img src="" class="hero-img" id="heroImg">
-                <div class="hero-info">
-                    <h1 id="heroTitle">Bienvenido</h1>
-                    <p id="heroDesc">Selecciona una fuente.</p>
-                </div>
+            <div class="search-container">
+                <input type="text" class="search-input" id="searchInput" placeholder="Busca cualquier cosa: Nirvana, Tool, Rock..." onkeyup="handleSearchDebounced()">
             </div>
-            <h2>Canciones Destacadas</h2>
-            <div class="grid" id="songGrid"></div>
+
+            <!-- Selector de Ánimo -->
+            <div class="mood-selector">
+                <button class="mood-btn mood-energy" onclick="setMood('energy')">⚡ Energía</button>
+                <button class="mood-btn mood-relax" onclick="setMood('relax')">☁️ Relax</button>
+                <button class="mood-btn mood-party" onclick="setMood('party')">🍸 Fiesta</button>
+                <button class="mood-btn mood-sad" onclick="setMood('sad')">Melancolía</button>
+                <button class="mood-btn mood-focus" onclick="setMood('focus')">🧠 Enfoque</button>
+            </div>
+
+            <div id="loader" class="loader"><i class="fas fa-circle-notch fa-spin"></i> Buscando en el universo...</div>
+            <div id="dynamicSections">
+                <!-- Resultados aquí -->
+            </div>
         </div>
     </div>
 
+    <!-- PLAYER BAR -->
     <div class="player-bar">
         <div class="player-left">
             <img src="" class="player-img" id="currentImg">
@@ -164,12 +176,13 @@
                 <div class="track-name" id="currTitle">Selecciona una canción</div>
                 <div class="artist-name" id="currArtist">...</div>
             </div>
+            <i class="far fa-heart fav-btn" id="favBtn" onclick="toggleFavorite()"></i>
         </div>
         <div class="player-center">
             <div class="controls">
                 <button class="btn-control" onclick="prevSong()"><i class="fas fa-step-backward"></i></button>
                 <button class="btn-play" onclick="togglePlay()" id="playBtn"><i class="fas fa-play"></i></button>
-                <button class="btn-control" onclick="nextSong()"><i class="fas fa-step-forward"></i></button>
+                <button class="btn-control" onclick="nextSong(true)"><i class="fas fa-step-forward"></i></button>
             </div>
             <div class="progress-bar">
                 <span id="currTime">0:00</span>
@@ -182,83 +195,201 @@
         <div style="width:30%"></div>
     </div>
 
-    <!-- Elementos Multimedia -->
-    <audio id="audio-element" preload="metadata"></audio>
     <div id="yt-player-container"></div>
-    
-    <div class="source-badge" id="sourceBadge">
-        <div class="dot dot-yt" id="sourceDot"></div>
-        <span id="sourceText">Fuente: YouTube</span>
-    </div>
+    <audio id="audio-element"></audio>
+    <div id="statusMsg" class="status-msg"></div>
 
     <script>
-        // --- DATOS CON IMÁGENES ESTABLES (Wikimedia/Wikidata) ---
-        const dbYT = [
-            { title: "Bohemian Rhapsody", artist: "Queen", img: "https://upload.wikimedia.org/wikipedia/en/9/9f/Bohemian_Rhapsody.jpg", url: "fJ9rUzIMcZQ", type: "yt" },
-            { title: "Smells Like Teen Spirit", artist: "Nirvana", img: "https://upload.wikimedia.org/wikipedia/en/b/b7/NirvanaNevermindalbumcover.jpg", url: "hTWKbfoikeg", type: "yt" },
-            { title: "Sweet Child O' Mine", artist: "Guns N' Roses", img: "https://upload.wikimedia.org/wikipedia/commons/9/98/Guns_N%27_Roses_-_Appetite_for_Destruction.png", url: "1w7OgIMMRc4", type: "yt" },
-            { title: "Billie Jean", artist: "Michael Jackson", img: "https://upload.wikimedia.org/wikipedia/en/d/d8/Michael_Jackson_Thriller_album_cover.jpg", url: "Zi_XLOBDo_Y", type: "yt" }
-        ];
+        // --- CONFIGURACIÓN DE VARIABLES DE ENTORNO (VERCEL) ---
+        // Estas variables se inyectan automáticamente si están configuradas en Vercel
+        const YOUTUBE_API_KEY = '{{YOUTUBE_API_KEY}}'; 
+        const OPENVERSE_CLIENT_ID = '{{OPENVERSE_CLIENT_ID}}';
+        const OPENVERSE_CLIENT_SECRET = '{{OPENVERSE_CLIENT_SECRET}}';
 
-        const dbFree = [
-            { title: "Cyberpunk Dream", artist: "Laser Unicorn", img: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'%3E%3Crect width='300' height='300' fill='%2300d4ff'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='24' fill='white'%3EIndie%3C/text%3E%3C/svg%3E", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", type: "free" },
-            { title: "Acoustic Sunrise", artist: "Free Folk", img: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'%3E%3Crect width='300' height='300' fill='%2300d4ff'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='24' fill='white'%3EFolk%3C/text%3E%3C/svg%3E", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3", type: "free" }
-        ];
+        let openverseToken = null;
+        let tokenExpiry = 0;
 
-        let currentList = dbYT;
+        // Estado Global
+        let currentList = [];
+        let favorites = JSON.parse(localStorage.getItem('nowarfy_favs')) || [];
         let currentIndex = -1;
         let isPlaying = false;
-        let currentMode = 'yt';
-        
-        const audioEl = document.getElementById('audio-element');
+        let searchQuery = "";
+        let currentMood = null;
+        let shuffleMode = false;
+        let searchTimeout = null;
         let ytPlayer = null;
         let progressInterval = null;
+        
+        const audioEl = document.getElementById('audio-element');
 
-        // Inicializar
-        render();
+        resetView();
         loadYouTubeAPI();
 
-        function setMode(mode) {
-            currentMode = mode;
-            currentList = mode === 'yt' ? dbYT : dbFree;
-            
-            document.getElementById('mode-yt').classList.toggle('active', mode === 'yt');
-            document.getElementById('mode-free').classList.toggle('active', mode === 'free');
-            
-            const dot = document.getElementById('sourceDot');
-            const txt = document.getElementById('sourceText');
-            const root = document.documentElement;
+        // --- AUTENTICACIÓN OPENVERSE ---
+        async function getOpenverseToken() {
+            if (!OPENVERSE_CLIENT_ID || !OPENVERSE_CLIENT_SECRET || OPENVERSE_CLIENT_ID === '{{OPENVERSE_CLIENT_ID}}') return null;
 
-            if (mode === 'yt') {
-                dot.className = 'dot dot-yt';
-                txt.innerText = 'Fuente: YouTube';
-                root.style.setProperty('--accent', '#ff0000');
-                document.getElementById('heroTitle').innerText = 'Éxitos Mundiales';
-                document.getElementById('heroDesc').innerText = 'Catálogo comercial ilimitado.';
-            } else {
-                dot.className = 'dot dot-free';
-                txt.innerText = 'Fuente: Libre (MP3)';
-                root.style.setProperty('--accent', '#00d4ff');
-                document.getElementById('heroTitle').innerText = 'Música Independiente';
-                document.getElementById('heroDesc').innerText = 'Artistas libres de derechos.';
+            const now = Date.now();
+            if (openverseToken && now < tokenExpiry) return openverseToken;
+
+            try {
+                const response = await fetch('https://api.openverse.org/v1/auth_tokens/token/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({
+                        'client_id': OPENVERSE_CLIENT_ID,
+                        'client_secret': OPENVERSE_CLIENT_SECRET,
+                        'grant_type': 'client_credentials'
+                    })
+                });
+                if (!response.ok) throw new Error('Auth failed');
+                const data = await response.json();
+                openverseToken = data.access_token;
+                tokenExpiry = now + (data.expires_in * 1000);
+                return openverseToken;
+            } catch (e) {
+                console.warn("Usando modo anónimo Openverse", e);
+                return null;
             }
-            
-            stopAll();
-            render();
         }
 
-        function render() {
-            const grid = document.getElementById('songGrid');
-            grid.innerHTML = '';
-            // Cargar imagen del hero
-            const firstSong = currentList[0];
-            document.getElementById('heroImg').src = firstSong.img;
+        // --- LÓGICA DE BÚSQUEDA HÍBRIDA ---
+        function handleSearchDebounced() {
+            clearTimeout(searchTimeout);
+            const query = document.getElementById('searchInput').value.trim();
+            if (!query) { resetView(); return; }
+            searchTimeout = setTimeout(() => performSmartSearch(query), 600);
+        }
 
-            currentList.forEach((song, idx) => {
+        async function performSmartSearch(query) {
+            searchQuery = query;
+            currentMood = null;
+            document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active'));
+            
+            const loader = document.getElementById('loader');
+            const container = document.getElementById('dynamicSections');
+            loader.style.display = 'block';
+            container.innerHTML = '';
+
+            try {
+                // 1. Intentar buscar en YouTube si hay clave válida
+                if (YOUTUBE_API_KEY && YOUTUBE_API_KEY !== '{{YOUTUBE_API_KEY}}') {
+                    await searchYouTube(query);
+                } else {
+                    showStatus("⚠️ Modo Demo: Sin clave de YouTube. Buscando en Openverse...");
+                    // Fallback si no hay clave: Buscar en Openverse (Música Libre)
+                    await searchOpenverse(query);
+                }
+            } catch (e) {
+                console.error(e);
+                container.innerHTML = '<p style="padding:20px; color:var(--alert)">Error de conexión. Verifica tu API Key o internet.</p>';
+            } finally {
+                loader.style.display = 'none';
+            }
+        }
+
+        async function searchYouTube(query) {
+            const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=20&q=${encodeURIComponent(query)}&key=${YOUTUBE_API_KEY}`;
+            const response = await fetch(url);
+            const data = await response.json();
+
+            if (data.error) {
+                throw new Error(data.error.message);
+            }
+
+            if (data.items && data.items.length > 0) {
+                const mappedResults = data.items.map(item => ({
+                    title: item.snippet.title,
+                    artist: item.snippet.channelTitle,
+                    img: item.snippet.thumbnails.medium.url,
+                    url: item.id.videoId, // Solo el ID del video
+                    type: 'yt',
+                    genre: 'unknown',
+                    mood: 'unknown'
+                }));
+                currentList = mappedResults;
+                renderGrid(mappedResults, `Resultados de YouTube: "${query}"`, "<i class='fab fa-youtube'></i>");
+            } else {
+                document.getElementById('dynamicSections').innerHTML = '<p style="padding:20px; color:#aaa;">No se encontraron videos en YouTube.</p>';
+            }
+        }
+
+        async function searchOpenverse(query) {
+            const token = await getOpenverseToken();
+            const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+            
+            // Mapeo simple de ánimo a tags de Openverse
+            let tagFilter = "";
+            if(currentMood) {
+                const moodMap = { 'energy': 'energetic', 'relax': 'peaceful', 'party': 'happy', 'sad': 'emotional', 'focus': 'instrumental' };
+                tagFilter = `&tags=${moodMap[currentMood]}`;
+            }
+
+            const url = `https://api.openverse.org/v1/audio/?q=${encodeURIComponent(query)}&page_size=20&filter_dead=true${tagFilter}`;
+            const response = await fetch(url, { headers });
+            
+            if (!response.ok) throw new Error('Openverse Search failed');
+            const data = await response.json();
+
+            if (data.results && data.results.length > 0) {
+                const mappedResults = data.results.map(track => ({
+                    title: track.title,
+                    artist: track.creator,
+                    img: track.thumbnail || 'https://via.placeholder.com/300x180?text=Music',
+                    url: track.url,
+                    type: 'mp3',
+                    genre: track.genres[0] || 'unknown',
+                    mood: 'unknown'
+                }));
+                currentList = mappedResults;
+                renderGrid(mappedResults, `Resultados Libres (Openverse): "${query}"`, "<i class='fas fa-globe'></i>");
+            } else {
+                document.getElementById('dynamicSections').innerHTML = '<p style="padding:20px; color:#aaa;">Sin resultados libres. ¡Configura la API Key de YouTube para buscar todo!</p>';
+            }
+        }
+
+        function setMood(mood) {
+            currentMood = mood;
+            searchQuery = "";
+            document.getElementById('searchInput').value = "";
+            document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            // Para modos, usamos búsqueda local o openverse simple
+            performSmartSearch(mood); 
+        }
+
+        function resetView() {
+            searchQuery = ""; currentMood = null;
+            document.getElementById('searchInput').value = "";
+            document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.nav-links li').forEach(l => l.classList.remove('active'));
+            document.querySelector('.nav-links li:first-child').classList.add('active');
+            // Cargar ejemplos iniciales
+            if(YOUTUBE_API_KEY && YOUTUBE_API_KEY !== '{{YOUTUBE_API_KEY}}') {
+                performSmartSearch("rock classics");
+            } else {
+                performSmartSearch("electronic");
+            }
+        }
+
+        function showSection(section) {
+            if(section === 'favorites') renderGrid(favorites, "Tus Favoritos", "<i class='fas fa-heart'></i>");
+        }
+
+        function renderGrid(list, title, icon) {
+            if (!list || list.length === 0) return;
+            const container = document.getElementById('dynamicSections');
+            const section = document.createElement('div');
+            section.innerHTML = `<div class="section-title">${icon} ${title}</div>`;
+            const grid = document.createElement('div');
+            grid.className = 'grid';
+
+            list.forEach((song, idx) => {
                 const div = document.createElement('div');
                 div.className = 'card';
                 div.innerHTML = `
-                    <img src="${song.img}" class="card-img">
+                    <img src="${song.img}" class="card-img" loading="lazy">
                     <div class="play-btn"><i class="fas fa-play"></i></div>
                     <div class="card-title">${song.title}</div>
                     <div class="card-desc">${song.artist}</div>
@@ -266,19 +397,16 @@
                 div.onclick = () => play(idx);
                 grid.appendChild(div);
             });
+            section.appendChild(grid);
+            container.appendChild(section);
         }
 
         function loadYouTubeAPI() {
-            if (window.YT && window.YT.Player) return; 
-            
+            if (window.YT && window.YT.Player) return;
             const tag = document.createElement('script');
             tag.src = "https://www.youtube.com/iframe_api";
-            const firstScriptTag = document.getElementsByTagName('script')[0];
-            firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-            
-            window.onYouTubeIframeAPIReady = function() {
-                console.log("YouTube API Ready");
-            };
+            document.getElementsByTagName('script')[0].parentNode.insertBefore(tag, document.getElementsByTagName('script')[0]);
+            window.onYouTubeIframeAPIReady = () => console.log("YT Engine Ready");
         }
 
         function play(idx) {
@@ -287,150 +415,119 @@
             
             document.getElementById('currTitle').innerText = song.title;
             document.getElementById('currArtist').innerText = song.artist;
-            const imgDiv = document.getElementById('currentImg');
-            imgDiv.src = song.img;
-            imgDiv.style.display = 'block';
+            const img = document.getElementById('currentImg');
+            img.src = song.img;
+            img.style.display = 'block';
+            updateFavButton(song);
 
             stopAll();
 
-            if (song.type === 'free') {
+            if (song.type === 'yt') {
+                if (window.YT && window.YT.Player) initYTPlayer(song.url);
+                else setTimeout(() => initYTPlayer(song.url), 500);
+            } else {
+                // MP3 Directo
                 audioEl.src = song.url;
                 audioEl.play().then(() => {
-                    isPlaying = true;
-                    updateIcon();
-                }).catch(e => console.error("Error audio:", e));
-                
+                    isPlaying = true; updateIcon(); startProgress(audioEl);
+                }).catch(e => alert("Error al reproducir stream."));
                 audioEl.ontimeupdate = () => updateProgress(audioEl.currentTime, audioEl.duration);
                 audioEl.onended = () => nextSong();
-
-            } else {
-                if (window.YT && window.YT.Player) {
-                    initYTPlayer(song.url);
-                } else {
-                    setTimeout(() => initYTPlayer(song.url), 500);
-                }
             }
         }
 
         function initYTPlayer(videoId) {
             document.getElementById('yt-player-container').innerHTML = '<div id="yt-player"></div>';
-            
             ytPlayer = new YT.Player('yt-player', {
-                height: '0',
-                width: '0',
-                videoId: videoId,
-                playerVars: { 
-                    'autoplay': 1, 
-                    'controls': 0,
-                    'enablejsapi': 1,
-                    'origin': window.location.origin,
-                    'widget_referrer': window.location.origin
-                },
-                events: {
-                    'onReady': onYTReady,
-                    'onStateChange': onYTStateChange,
-                    'onError': (e) => console.error("YT Error", e)
-                }
+                height: '0', width: '0', videoId: videoId,
+                playerVars: { 'autoplay': 1, 'controls': 0, 'enablejsapi': 1, 'origin': window.location.origin },
+                events: { 'onReady': onYTReady, 'onStateChange': onYTStateChange }
             });
         }
 
-        function onYTReady() {
-            isPlaying = true;
-            updateIcon();
-            if (progressInterval) clearInterval(progressInterval);
-            progressInterval = setInterval(() => {
-                if(ytPlayer && ytPlayer.getCurrentTime) {
-                    const curr = ytPlayer.getCurrentTime();
-                    const dur = ytPlayer.getDuration();
-                    if(dur > 0) updateProgress(curr, dur);
-                }
-            }, 500);
-        }
-
+        function onYTReady() { isPlaying = true; updateIcon(); startProgress(ytPlayer); }
         function onYTStateChange(event) {
-            if (event.data === YT.PlayerState.PLAYING) {
-                isPlaying = true;
-                if (!progressInterval) {
-                    progressInterval = setInterval(() => {
-                        if(ytPlayer && ytPlayer.getCurrentTime) {
-                            updateProgress(ytPlayer.getCurrentTime(), ytPlayer.getDuration());
-                        }
-                    }, 500);
-                }
-            } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.BUFFERING) {
-                isPlaying = false;
-            } else if (event.data === YT.PlayerState.ENDED) {
-                isPlaying = false;
-                nextSong();
-            }
+            if (event.data === YT.PlayerState.PLAYING) { isPlaying = true; if(!progressInterval) startProgress(ytPlayer); }
+            else if (event.data === YT.PlayerState.PAUSED) isPlaying = false;
+            else if (event.data === YT.PlayerState.ENDED) nextSong();
             updateIcon();
-        }
-
-        function updateProgress(curr, dur) {
-            if(dur && dur > 0) {
-                const pct = (curr / dur) * 100;
-                document.getElementById('progFill').style.width = pct + '%';
-                document.getElementById('currTime').innerText = format(curr);
-                document.getElementById('totalTime').innerText = format(dur);
-            }
         }
 
         function togglePlay() {
-            if (currentMode === 'free') {
-                if (isPlaying) { audioEl.pause(); } else { audioEl.play(); }
-                isPlaying = !isPlaying;
+            if(currentIndex === -1) return;
+            const song = currentList[currentIndex];
+            if (song.type === 'yt') {
+                if(ytPlayer) { if(isPlaying) ytPlayer.pauseVideo(); else ytPlayer.playVideo(); isPlaying = !isPlaying; }
             } else {
-                if (ytPlayer) {
-                    if (isPlaying) { ytPlayer.pauseVideo(); } else { ytPlayer.playVideo(); }
-                    isPlaying = !isPlaying;
-                }
+                if(isPlaying) audioEl.pause(); else audioEl.play(); isPlaying = !isPlaying;
             }
             updateIcon();
         }
 
-        function nextSong() {
+        function nextSong(manual = false) {
+            if(manual && shuffleMode) { play(Math.floor(Math.random() * currentList.length)); return; }
             let next = currentIndex + 1;
-            if (next >= currentList.length) next = 0;
+            if(next >= currentList.length) next = 0;
             play(next);
         }
 
         function prevSong() {
             let prev = currentIndex - 1;
-            if (prev < 0) prev = currentList.length - 1;
+            if(prev < 0) prev = currentList.length - 1;
             play(prev);
         }
 
         function stopAll() {
+            if(ytPlayer) { ytPlayer.stopVideo(); ytPlayer.destroy(); ytPlayer = null; }
             audioEl.pause();
-            audioEl.src = "";
-            
-            if (ytPlayer) { 
-                ytPlayer.stopVideo(); 
-                ytPlayer.destroy(); 
-                ytPlayer = null; 
-            }
-            
-            if (progressInterval) {
-                clearInterval(progressInterval);
-                progressInterval = null;
-            }
-
-            isPlaying = false;
-            updateIcon();
+            if(progressInterval) clearInterval(progressInterval);
+            isPlaying = false; updateIcon();
             document.getElementById('progFill').style.width = '0%';
-            document.getElementById('currTime').innerText = "0:00";
-            document.getElementById('totalTime').innerText = "0:00";
         }
 
-        function updateIcon() {
-            document.getElementById('playBtn').innerHTML = isPlaying ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>';
+        function startProgress(source) {
+            if(progressInterval) clearInterval(progressInterval);
+            progressInterval = setInterval(() => {
+                let curr, dur;
+                if(source === ytPlayer) { curr = source.getCurrentTime(); dur = source.getDuration(); }
+                else { curr = source.currentTime; dur = source.duration; }
+                if(dur) {
+                    document.getElementById('progFill').style.width = `${(curr/dur)*100}%`;
+                    document.getElementById('currTime').innerText = format(curr);
+                    document.getElementById('totalTime').innerText = format(dur);
+                }
+            }, 500);
         }
 
-        function format(sec) {
-            if(!sec || sec < 0) return "0:00";
-            const m = Math.floor(sec / 60);
-            const s = Math.floor(sec % 60);
-            return `${m}:${s < 10 ? '0'+s : s}`;
+        function updateProgress(curr, dur) { /* Helper */ }
+        function updateIcon() { document.getElementById('playBtn').innerHTML = isPlaying ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>'; }
+        function format(sec) { if(!sec) return "0:00"; const m=Math.floor(sec/60); const s=Math.floor(sec%60); return `${m}:${s<10?'0'+s:s}`; }
+
+        function toggleFavorite() {
+            if(currentIndex === -1) return;
+            const song = currentList[currentIndex];
+            const idx = favorites.findIndex(f => f.title === song.title && f.artist === song.artist);
+            if(idx >= 0) favorites.splice(idx, 1); else favorites.push(song);
+            localStorage.setItem('nowarfy_favs', JSON.stringify(favorites));
+            updateFavButton(song);
+            document.getElementById('favCount').innerText = favorites.length;
+        }
+        function updateFavButton(song) {
+            const exists = favorites.some(f => f.title === song.title && f.artist === song.artist);
+            document.getElementById('favBtn').className = exists ? "fas fa-heart fav-btn active" : "far fa-heart fav-btn";
+        }
+
+        function toggleShuffle() {
+            shuffleMode = !shuffleMode;
+            const icon = document.getElementById('shuffleIcon');
+            icon.style.color = shuffleMode ? 'var(--spotify-green)' : '#777';
+        }
+
+        function showStatus(msg) {
+            const el = document.getElementById('statusMsg');
+            el.innerText = msg;
+            el.style.display = 'block';
+            setTimeout(() => el.style.display = 'none', 4000);
         }
     </script>
 </body>
