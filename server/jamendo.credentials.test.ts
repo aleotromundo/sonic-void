@@ -2,7 +2,7 @@ import axios from "axios";
 import { describe, expect, it } from "vitest";
 
 describe("Jamendo credentials", () => {
-  it("accepts the configured client id", async () => {
+  it.skipIf(process.env.RUN_EXTERNAL_TESTS !== "1")("accepts the configured client id", async () => {
     const clientId = process.env.JAMENDO_CLIENT_ID;
     expect(clientId).toBeTruthy();
     const response = await axios.get("https://api.jamendo.com/v3.0/tracks/", {

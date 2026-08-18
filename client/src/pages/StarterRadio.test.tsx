@@ -26,16 +26,17 @@ const playableTrack: Track = {
 
 describe("StarterRadio", () => {
   it("shows entry playlists and playable recommendations", () => {
-    const onSearch = vi.fn();
+    const onStationSelect = vi.fn();
     const onPlay = vi.fn();
-    render(<StarterRadio stations={[{ name: "Afterglow", query: "lofi chill", detail: "Lo-fi", tracks: [playableTrack] }]} loading={false} onSearch={onSearch} onPlay={onPlay} />);
+    const station = { name: "Afterglow", query: "lofi chill", detail: "Lo-fi", artUrl: "/manus-storage/nowarfy-relax_53529c0a.jpg", tracks: [playableTrack] };
+    render(<StarterRadio stations={[station]} loading={false} onStationSelect={onStationSelect} onPlay={onPlay} />);
 
     expect(screen.getByText("Playlists para entrar directo")).toBeTruthy();
     expect(screen.getByText("Night Signal")).toBeTruthy();
     expect(screen.getAllByText("Open Frequency").length).toBeGreaterThan(0);
 
     fireEvent.click(screen.getAllByRole("button", { name: /Afterglow/i })[0]);
-    expect(onSearch).toHaveBeenCalledWith("lofi chill");
+    expect(onStationSelect).toHaveBeenCalledWith(station);
     fireEvent.click(screen.getByRole("button", { name: /Play · Afterglow/i }));
     expect(onPlay).toHaveBeenCalledWith(playableTrack);
   });

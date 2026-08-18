@@ -282,3 +282,28 @@
 - [x] Implementar catálogo liviano con URLs de audio autorizadas y metadatos, sin almacenar archivos pesados.
 - [x] Deduplicar pistas por fuente/identificador y conservar licencia, atribución y estado reproducible.
 - [x] Preparar lotes ampliables por estación y validar que cada referencia tenga Play funcional.
+
+- [ ] Retirar definitivamente los filtros decorativos de señal del buscador y del hero.
+- [ ] Mantener únicamente información verificable de fuentes, audio reproducible, licencia, atribución y acciones Play internas.
+- [ ] Actualizar pruebas y validar que la búsqueda real siga funcionando sin filtros inventados.
+- [ ] Guardar checkpoint de la corrección de enfoque musical.
+
+- [ ] Auditar latencias, errores y límites de Jamendo y Audius con mediciones separadas por etapa.
+- [ ] Diseñar timeouts, circuit breaker, caché y validación de streams sin bloquear la búsqueda.
+- [ ] Evaluar una fuente de audio adicional con stream directo, licencia verificable y API estable.
+- [ ] Documentar una estrategia priorizada de implementación y métricas de éxito.
+
+- [ ] Implementar `probePlayableStream` server-side con HEAD/Range, timeout y límites de respuesta.
+- [ ] Conectar la validación a Jamendo y Audius antes de devolver pistas al cliente.
+- [ ] Añadir pruebas de status, content-type, redirecciones, timeout y fallback HEAD/Range.
+- [ ] Ejecutar TypeScript y Vitest, y guardar checkpoint de la validación de streams.
+
+- [x] Reemplazar las señales del hero por Relax, Focus, Workout, Energize y Sleep.
+- [x] Mostrar una imagen o carátula visualmente distinta en cada círculo sin inventar audio.
+- [x] Mantener Play interno y estado claro cuando una estación todavía no tenga pista reproducible.
+- [x] Verificar el hero en escritorio y móvil y publicar el cambio.
+
+- [x] Al seleccionar Relax, Focus, Workout, Energize o Sleep, abrir la sesión correspondiente y reproducir su primera pista reproducible.
+- [x] Preparar la cola anticipada de la estación seleccionada y conservar el estado de Full Signal.
+- [x] Manejar de forma honesta estaciones sin audio disponible o con fuente temporalmente caída.
+- [x] Añadir pruebas del flujo de selección y autoplay de estación.
