@@ -184,12 +184,12 @@
 - [x] Agregar pruebas del visualizador y verificar reproductor en escritorio/móvil
 - [x] Probar transformación de frecuencias a barras y layout responsive del visualizador
 - [x] Guardar checkpoint del visualizador tipo MilkDrop original
-- [ ] Confirmar licencia MIT de Butterchurn y licencia explícita de presets seleccionados
-- [ ] Instalar Butterchurn y su paquete de presets compatible
-- [ ] Integrar el motor WebGL con AudioContext y fallback Canvas
-- [ ] Mostrar nombre, licencia y atribución del preset activo
-- [ ] Añadir pruebas de carga, selección, WebGL ausente y reduced motion
-- [ ] Guardar checkpoint de la integración Butterchurn
+- [x] Confirmar licencia MIT de Butterchurn y licencia explícita de presets seleccionados
+- [x] Instalar Butterchurn y su paquete de presets compatible
+- [x] Integrar el motor WebGL con AudioContext y fallback Canvas
+- [x] Mostrar nombre, licencia y atribución del preset activo
+- [x] Añadir pruebas de carga, selección, WebGL ausente y reduced motion
+- [x] Guardar checkpoint de la integración Butterchurn
 - [x] Inspeccionar remotos GitHub existentes y estado del repositorio local
 - [x] Confirmar que secretos y archivos `.env` no entren al repositorio
 - [x] Crear o conectar un repositorio privado de Sonic//Void en GitHub
