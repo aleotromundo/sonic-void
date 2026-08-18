@@ -169,4 +169,18 @@
 - [x] Añadir controles visibles de cola y pruebas de filtrado/persistencia/responsive
 - [x] Probar que localStorage conserva licencia, atribución y enlace legal de cada pista reproducible
 - [x] Probar en RTL la estructura responsive de la cola sin depender de screenshots no auditables
-- [ ] Guardar checkpoint de la nueva cola visible
+- [x] Guardar checkpoint de la nueva cola visible
+- [x] Auditar el reproductor y elegir una arquitectura visualizadora original y eficiente
+- [x] Verificar licencia del código MilkDrop/MilkDrop2 y compatibilidad con Sonic//Void
+- [x] Auditar licencias de presets `.milk`, shaders, texturas y packs de terceros
+- [x] Comparar integración directa, conversión de presets y recreación propia
+- [x] Decidir arquitectura: Canvas original ahora; Butterchurn/projectM quedan como opción futura solo con presets licenciados
+- [x] Documentar una recomendación legal/técnica con fuentes oficiales
+- [x] Implementar ecualizador visual animado durante playback y estado idle/pausa
+- [x] Conectar el visualizador a AudioContext/AnalyserNode cuando el navegador y la fuente lo permitan
+- [x] Mantener fallback explícito para streams sin CORS sin prometer análisis real
+- [x] Añadir accesibilidad, reduced motion y límites de rendimiento al visualizador
+- [x] Desactivar completamente el requestAnimationFrame durante prefers-reduced-motion
+- [x] Agregar pruebas del visualizador y verificar reproductor en escritorio/móvil
+- [x] Probar transformación de frecuencias a barras y layout responsive del visualizador
+- [ ] Guardar checkpoint del visualizador tipo MilkDrop original
