@@ -259,3 +259,26 @@
 - [ ] Probar las fuentes y publicar únicamente opciones con Play funcional.
 
 - [ ] Sincronizar cada bloque validado con GitHub y comprobar el deployment correspondiente en Vercel antes de continuar.
+
+- [ ] Hacer visible el botón Full Signal en escritorio y móvil, con indicador claro de que abre las visualizaciones.
+- [ ] Probar el acceso visual en Manus Space, Vercel y el preview local.
+
+- [ ] Completar auditoría integral de funcionalidades, pruebas, despliegues y documentación.
+- [ ] Cerrar o documentar honestamente cualquier pendiente restante antes del informe final.
+
+- [x] Retirar el panel y contrato de filtros de país, género, movimiento y año.
+- [x] Reemplazar las señales iniciales por estaciones libres, under, alternativas, experimentales y anarquistas con audio reproducible.
+- [x] Mantener fuera de la grilla toda pista sin Play funcional y conservar atribución/licencia dentro del sitio.
+- [x] Actualizar pruebas, sincronizar GitHub y verificar Manus Space/Vercel después del cambio.
+
+- [x] Mover las señales al hero principal en círculos visibles con carátulas.
+- [x] Añadir Play directo, nombre y estado reproducible en cada círculo.
+- [x] Validar el hero circular en escritorio y móvil y sincronizar el cambio.
+
+- [ ] Definir una actualización periódica controlada para ampliar estaciones con pistas legales reproducibles.
+- [ ] Evitar búsquedas infinitas, duplicados, streams inválidos y tareas en segundo plano sin límites.
+- [ ] Añadir estado visible de última actualización y fallos de fuentes.
+
+- [x] Implementar catálogo liviano con URLs de audio autorizadas y metadatos, sin almacenar archivos pesados.
+- [x] Deduplicar pistas por fuente/identificador y conservar licencia, atribución y estado reproducible.
+- [x] Preparar lotes ampliables por estación y validar que cada referencia tenga Play funcional.

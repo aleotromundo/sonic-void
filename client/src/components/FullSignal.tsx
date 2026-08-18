@@ -123,7 +123,7 @@ export function FullSignal({ audioElement, isPlaying, reducedMotion, onClose }: 
     onClose?.();
   };
 
-  if (!open) return <button onClick={enter} disabled={reducedMotion} className="hidden items-center gap-1.5 text-white/40 transition hover:text-[#00e7ff] disabled:cursor-not-allowed disabled:opacity-30 sm:flex" aria-label="Abrir modo Full Signal" title={reducedMotion ? "Desactivado por preferencias de movimiento reducido" : "Abrir visualizador inmersivo"}><Maximize2 size={15} /><span className="font-mono text-[9px] uppercase tracking-wider">Full Signal</span></button>;
+  if (!open) return <button onClick={enter} disabled={reducedMotion} className="flex shrink-0 items-center gap-1.5 border border-[#00e7ff]/35 bg-[#00e7ff]/[.06] px-2 py-1.5 text-[#00e7ff] transition hover:border-[#ff2db2]/60 hover:bg-[#ff2db2]/[.08] hover:text-[#ff65c8] disabled:cursor-not-allowed disabled:opacity-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#00e7ff]" aria-label="Abrir modo Full Signal" title={reducedMotion ? "Desactivado por preferencias de movimiento reducido" : "Abrir visualizador inmersivo a pantalla completa"}><Maximize2 size={15} /><span className="font-mono text-[9px] uppercase tracking-wider">Visuales</span></button>;
 
   return <div className="fixed inset-0 z-[70] overflow-hidden bg-[#05060b]" role="dialog" aria-modal="true" aria-label="Visualizador inmersivo Full Signal">
     <canvas ref={fallbackCanvasRef} className="absolute inset-0 h-full w-full" aria-label="Visualizador de profundidad reactivo" />

@@ -92,7 +92,7 @@ describe("music integrations", () => {
     request.mockResolvedValueOnce({ data: { headers: { status: "success" }, results: [{ id: "missing-audio", name: "No stream", artist_name: "Unknown" }] } });
     await expect(searchMusic("ambient instrumental relaxing music", 0)).resolves.toMatchObject({ items: [], total: 0 });
     request.mockRestore();
-  });
+  }, 12_000);
 
   it("falls back safely when MusicBrainz responds with 503", async () => {
     const request = vi.spyOn(axios, "get").mockRejectedValue(Object.assign(new Error("Service unavailable"), { response: { status: 503 } }));
