@@ -3,7 +3,7 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
-import { getGeniusLyrics, isSpotifyConfigured, searchSpotify } from "./music";
+import { getGeniusLyrics, isSpotifyConfigured, searchMusic } from "./music";
 
 export const appRouter = router({
   system: systemRouter,
@@ -19,7 +19,7 @@ export const appRouter = router({
     status: publicProcedure.query(async () => ({ spotifyConfigured: await isSpotifyConfigured() })),
     search: publicProcedure
       .input(z.object({ query: z.string().trim().min(1).max(120), offset: z.number().int().min(0).max(1000).default(0) }))
-      .query(async ({ input }) => searchSpotify(input.query, input.offset)),
+      .query(async ({ input }) => searchMusic(input.query, input.offset)),
     lyrics: publicProcedure
       .input(z.object({ name: z.string().min(1).max(200), artist: z.string().min(1).max(200) }))
       .query(async ({ input }) => getGeniusLyrics(input.name, input.artist)),

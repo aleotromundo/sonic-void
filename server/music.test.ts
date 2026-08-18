@@ -6,7 +6,7 @@ describe("music integrations", () => {
     delete process.env.SPOTIFY_CLIENT_ID;
     delete process.env.SPOTIFY_CLIENT_SECRET;
     expect(await isSpotifyConfigured()).toBe(false);
-    await expect(searchSpotify("test", 0)).resolves.toMatchObject({ configured: false, items: [], total: 0 });
+    await expect(searchSpotify("test", 0)).resolves.toBeNull();
   });
 
   it("returns a clear setup state for lyrics without a Genius token", async () => {

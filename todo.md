@@ -20,3 +20,8 @@
 - [x] Agregar estados explícitos de error para búsqueda y letras
 - [x] Añadir pruebas Vitest para procedimientos tRPC de búsqueda y letras
 - [x] Guardar checkpoint final después de estas correcciones
+- [x] Adaptar búsqueda y carátulas a MusicBrainz y Cover Art Archive como fuente gratuita alternativa
+- [x] Añadir etiquetas de fuente y estados de disponibilidad para distinguir MusicBrainz de Spotify
+- [x] Actualizar pruebas, verificación visual y checkpoint de la adaptación alternativa
+- [x] Corregir mensajes de error y vacío para que distingan MusicBrainz de Spotify, y mostrar la fuente en cada resultado o detalle
+- [x] Guardar un nuevo checkpoint después de la adaptación MusicBrainz/Cover Art Archive validada
