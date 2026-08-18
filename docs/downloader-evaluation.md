@@ -48,3 +48,9 @@ Por lo tanto, el modo personal viable se divide en tres clases: previews o strea
 
 [8]: https://developer.spotify.com/documentation/web-playback-sdk "Spotify Web Playback SDK"
 [9]: https://developers.google.com/youtube/iframe_api_reference "YouTube IFrame Player API"
+
+## Estados del modo personal
+
+La interfaz debe distinguir cuatro estados: `archivo local`, cuando el usuario selecciona un archivo desde su dispositivo y el navegador crea un Object URL temporal; `preview autorizada`, cuando existe un stream externo validado por el backend; `metadata sin audio`, cuando hay información de una obra pero no una URL reproducible; y `fuente no disponible`, cuando el proveedor está caído, bloquea el acceso o no supera el probe. Los archivos locales no se suben al servidor ni se guardan como bytes en localStorage; solo pueden conservarse metadatos de sesión mientras el Object URL sea válido.
+
+El backend no debe recibir rutas locales, aceptar comandos de descarga ni resolver URLs de plataformas como sustituto de una fuente autorizada. La cola persistida conserva únicamente pistas externas que ya tienen licencia, atribución y `previewUrl` verificadas; una selección local queda fuera de esa cola persistida salvo que en el futuro se diseñe un almacenamiento explícito del usuario.

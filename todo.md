@@ -348,7 +348,7 @@
 - [x] Pulir reproducción continua, selección anticipada y fallbacks sin repetir ni mostrar streams inválidos.
 - [ ] Estabilizar Jamendo/Audius y preparar una integración experimental de ccMixter solo si supera las validaciones.
 - [x] Refinar home, player, Full Signal, accesibilidad y responsive.
-- [ ] Validar local, Manus Space, GitHub y Vercel, documentando cualquier límite restante.
+- [x] Validar local, Manus Space, GitHub y Vercel, documentando cualquier límite restante.
 
 - [x] Reproducir y aislar `FUNCTION_INVOCATION_FAILED` en `/api/trpc/auth.me` del dominio público.
 - [x] Corregir el entrypoint serverless para que Vercel inicialice Express/tRPC sin depender del listener local.
@@ -412,8 +412,8 @@
 - [x] Documentar qué patrones de metadata, búsqueda, colas y UI pueden reutilizarse legalmente
 - [x] Mantener fuera de nowarfy la descarga o retransmisión de audio de YouTube/Spotify sin autorización
 - [x] Incorporar las mejoras legales derivadas de la evaluación y validar pruebas
-- [ ] Definir modo personal: metadata oficial, reproducción autorizada o archivos locales del usuario
-- [ ] Mantener el servidor sin downloader ni retransmisión de audio de terceros
+- [x] Definir modo personal: metadata oficial, reproducción autorizada o archivos locales del usuario
+- [x] Mantener el servidor sin downloader ni retransmisión de audio de terceros
 - [ ] Diseñar estados UI distintos para archivo local, preview autorizada, metadata sin audio y fuente no disponible
 - [ ] Validar aislamiento, persistencia local y reproducción del modo personal
 - [x] Extraer patrones de matching, metadata, colas, progreso y persistencia de los repositorios sugeridos
