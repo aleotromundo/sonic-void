@@ -21,6 +21,12 @@ describe("Player", () => {
     expect(onPlay).toHaveBeenCalledTimes(1);
   });
 
+  it("shows Jamendo as the active playable source", () => {
+    render(<Player {...baseProps} track={{ ...track, source: "jamendo" }} isPlaying={false} onPlay={vi.fn()} onPlaybackError={vi.fn()} />);
+    expect(screen.getByText("Fuente: jamendo")).toBeInTheDocument();
+    expect(document.querySelector("audio")).toHaveAttribute("src", track.previewUrl);
+  });
+
   it("shows an explicit unavailable state without rendering audio", () => {
     render(<Player {...baseProps} track={{ ...track, previewUrl: null }} isPlaying={false} onPlay={vi.fn()} onPlaybackError={vi.fn()} />);
     expect(screen.getByText("Preview no disponible")).toBeInTheDocument();

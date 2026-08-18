@@ -144,3 +144,17 @@
 - [x] Implementar matching real entre resultados primarios y fallback de audio por artista, título y duración
 - [x] Mostrar en el reproductor la fuente activa de audio y su enlace oficial
 - [x] Actualizar los tipos de persistencia local para soportar Audius sin casts inseguros
+- [x] Confirmar contrato oficial de Jamendo y documentar licencia, atribución, límites y campos de audio
+- [x] Configurar la credencial de Jamendo mediante secretos seguros, sin exponerla al cliente
+- [x] Implementar búsqueda Jamendo con preview/stream reproducible y fuente oficial
+- [x] Integrar Jamendo en el fallback con matching estricto y persistencia local
+- [x] Reflejar correctamente que Jamendo usa matching estricto cuando hay equivalente y modo descubrimiento semántico solo en consultas libres
+- [x] Añadir etiqueta verificable de modo descubrimiento Jamendo en resultados y reproductor
+- [x] Renombrar y documentar explícitamente el fallback Jamendo semántico para consultas libres cuando los resultados primarios no son equivalentes
+- [x] Probar la regla exacta: matching estricto si existe equivalente primario y descubrimiento semántico solo en consulta libre
+- [x] Documentar el fallback semántico Jamendo únicamente para consultas libres sin equivalente primario reproducible
+- [x] Agregar pruebas Jamendo de falsos positivos, respuesta inválida y Player con source jamendo
+- [x] Agregar pruebas deterministas de mapeo, matching, errores y reproducción Jamendo
+- [x] Verificar la UI de fuente Jamendo en escritorio y móvil y guardar checkpoint
+- [ ] Verificar visualmente una búsqueda con resultados Jamendo y guardar checkpoint real posterior
+- [x] Estabilizar los inputs de búsqueda y letras para evitar refetches infinitos en la vista por URL
