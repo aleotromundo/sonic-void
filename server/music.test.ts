@@ -38,6 +38,8 @@ describe("music integrations", () => {
   });
 
   it("uses Audius when the primary catalog has no playable preview", async () => {
+    process.env.SPOTIFY_CLIENT_ID = "";
+    process.env.SPOTIFY_CLIENT_SECRET = "";
     const request = vi.spyOn(axios, "get");
     request.mockResolvedValueOnce({ data: { artists: [{ id: "artist-1", name: "Shakira" }] } });
     request.mockResolvedValueOnce({ data: { "release-groups": [], "release-group-count": 0 } });
@@ -48,6 +50,8 @@ describe("music integrations", () => {
   });
 
   it("uses Jamendo when Audius has no related playable result", async () => {
+    process.env.SPOTIFY_CLIENT_ID = "";
+    process.env.SPOTIFY_CLIENT_SECRET = "";
     process.env.JAMENDO_CLIENT_ID = "test-client";
     const request = vi.spyOn(axios, "get");
     request.mockResolvedValueOnce({ data: { artists: [{ id: "artist-2", name: "Creative Artist" }] } });

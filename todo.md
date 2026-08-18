@@ -215,3 +215,7 @@
 - [x] Añadir pruebas de planificación anticipada, cola preparada y transición instantánea.
 
 - [x] Sincronizar la versión validada de Sonic//Void con Manus Space y el repositorio privado de GitHub para comparación.
+
+- [x] Añadir botón de silencio y control de volumen deslizable con estado accesible y persistencia local.
+- [x] Mostrar una sección visible de “A continuación” con las pistas ya preparadas por autoplay.
+- [x] Añadir pruebas RTL para volumen, silencio y lista de próximas pistas.
