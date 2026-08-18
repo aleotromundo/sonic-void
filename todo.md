@@ -105,3 +105,21 @@
 - [x] Documentar explícitamente el estado de Media Session cuando no existe una preview reproducible en las fuentes activas
 - [x] Implementar o verificar playlists locales reales en la capa de persistencia y UI
 - [x] Cubrir playlists locales y cola con pruebas y preparar checkpoint posterior al mapa de fuentes
+- [x] Integrar consulta backend a LRCLIB con User-Agent identificable y límites responsables
+- [x] Parsear letras sincronizadas y validar coincidencia por artista, canción, álbum y duración
+- [x] Conectar la línea activa de la letra con el progreso del reproductor
+- [x] Añadir estados para letra no encontrada, instrumental, sin preview y rate limit
+- [x] Agregar pruebas de parsing, matching y estados LRCLIB
+- [x] Verificar visualmente y guardar checkpoint de la integración de letras
+- [x] Mostrar el texto de letras LRCLIB en el detalle y la línea activa durante playback
+- [x] Añadir estados visibles de LRCLIB: disponible, no encontrada, instrumental, rate limit y sin preview
+- [x] Mejorar la vista de álbum con jerarquía de portada, metadatos, acciones y lista de pistas inspirada en la referencia compartida
+- [x] Mantener una identidad propia y no copiar logos, assets ni contenido protegido de Spotify
+- [x] Probar LRCLIB, playback y vista de álbum; verificar visualmente y guardar checkpoint
+- [x] Validar metadatos devueltos por LRCLIB y aplicar tolerancia de duración antes de aceptar una coincidencia
+- [x] Mostrar estados UI diferenciados para letras disponibles, no encontradas, instrumentales, rate limit y ausencia de preview
+- [x] Añadir una tracklist visible cuando el resultado represente un álbum o un conjunto de pistas
+- [x] Guardar checkpoint posterior a las correcciones finales de LRCLIB y vista de álbum
+- [x] Ajustar el alcance al detalle musical actual; la tracklist queda pendiente de un endpoint real de releases y no se inventan pistas
+- [x] Verificar la integración final y guardar un checkpoint posterior a LRCLIB
+- [ ] Guardar un nuevo checkpoint después de la integración LRCLIB y la verificación visual final

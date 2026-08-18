@@ -6,6 +6,7 @@ export type LocalQueueItem = {
   artist: string;
   album: string;
   releaseYear: string;
+  durationMs: number;
   durationLabel: string;
   popularity: number;
   imageUrl: string | null;

@@ -4,6 +4,7 @@ vi.mock("axios", () => ({ default: { get: vi.fn(), post: vi.fn() } }));
 
 import axios from "axios";
 import { appRouter } from "./routers";
+import { isLrclibMatch, parseLrcLyrics } from "./music";
 import type { TrpcContext } from "./_core/context";
 
 function context(): TrpcContext { return { user: null, req: { protocol: "https", headers: {} } as TrpcContext["req"], res: {} as TrpcContext["res"] }; }
@@ -33,8 +34,23 @@ describe("music tRPC procedures", () => {
     expect(result.items[0]).toMatchObject({ kind: "track", name: "Unknown", artist: "Other Artist" });
   });
 
-  it("returns an explicit unconfigured result for lyrics", async () => {
-    const result = await appRouter.createCaller(context()).music.lyrics({ name: "Song", artist: "Artist" });
-    expect(result).toMatchObject({ status: "not_configured", text: null, sourceUrl: null });
+  it("parses synchronized LRC timestamps deterministically", () => {
+    expect(parseLrcLyrics("[00:02.50]Second line\n[00:01.00]First line\n[00:03.000]Third line")).toEqual([
+      { timeMs: 1000, text: "First line" },
+      { timeMs: 2500, text: "Second line" },
+      { timeMs: 3000, text: "Third line" },
+    ]);
+  });
+
+  it("accepts matching LRCLIB metadata within duration tolerance", () => {
+    expect(isLrclibMatch({ trackName: "Canción", artistName: "Artista", albumName: "Álbum", duration: 180 }, "Cancion", "Artista", "Album", 182)).toBe(true);
+    expect(isLrclibMatch({ trackName: "Canción", artistName: "Otra artista", albumName: "Álbum", duration: 180 }, "Cancion", "Artista", "Album", 180)).toBe(false);
+    expect(isLrclibMatch({ trackName: "Canción", artistName: "Artista", albumName: "Álbum", duration: 240 }, "Cancion", "Artista", "Album", 180)).toBe(false);
+  });
+
+  it("returns a safe not-found result when LRCLIB has no matching lyrics", async () => {
+    mockedGet.mockResolvedValueOnce({ data: {} } as any);
+    const result = await appRouter.createCaller(context()).music.lyrics({ name: "Song", artist: "Artist", album: "Album", duration: 180000 });
+    expect(result).toMatchObject({ status: "not_found", text: null, syncedLyrics: [], sourceName: "LRCLIB" });
   });
 });
