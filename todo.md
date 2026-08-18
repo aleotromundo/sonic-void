@@ -157,4 +157,5 @@
 - [x] Agregar pruebas deterministas de mapeo, matching, errores y reproducción Jamendo
 - [x] Verificar la UI de fuente Jamendo en escritorio y móvil y guardar checkpoint
 - [ ] Verificar visualmente una búsqueda con resultados Jamendo y guardar checkpoint real posterior
+- [x] Optimizar consultas libres para mostrar Jamendo rápidamente cuando la cadena primaria está lenta
 - [x] Estabilizar los inputs de búsqueda y letras para evitar refetches infinitos en la vista por URL
