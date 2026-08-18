@@ -360,3 +360,43 @@
 - [x] Mostrar un contador honesto de canciones disponibles junto a la lista.
 - [x] Mantener Play directo, licencias, atribución y estado de fuente en cada pista.
 - [x] Probar escritorio, móvil, reduced-motion y publicar la mejora.
+
+- [ ] Auditar por qué el contador actual queda en aproximadamente 13 pistas reproducibles.
+- [ ] Identificar fuentes alternativas con suficiente volumen, audio directo, licencia y atribución verificables.
+- [ ] Diseñar expansión por lotes y caché de metadatos sin inflar el contador con pistas inválidas.
+- [ ] Aumentar el catálogo visible y probar que cada pista nueva tenga Play funcional.
+- [ ] Documentar honestamente el volumen alcanzable y sus límites legales/técnicos.
+
+- [ ] Separar en la interfaz y backend las métricas encontradas, licencia verificable y reproducibles ahora.
+- [ ] Auditar el cuello de botella que reduce el catálogo visible a unas 13 pistas.
+- [ ] Recopilar fuentes mundiales adicionales de música abierta e independiente, no solo las APIs actuales.
+- [ ] Implementar ingesta por lotes y caché de metadatos para ampliar el catálogo sin descargar audio.
+- [ ] Mostrar un volumen amplio de resultados sin presentar metadata sin Play como música disponible.
+
+- [ ] Quitar cualquier restricción de estilo, género, movimiento o país de la recolección inicial.
+- [ ] Recolectar resultados abiertos en lotes amplios antes de clasificar o descartar por estética.
+- [ ] Contar únicamente pistas con licencia/atribución verificable y Play funcional, sin filtrar por gusto.
+- [ ] Revisar estilos y categorías recién después de observar el volumen real obtenido.
+
+- [ ] Abrir la consulta global sin filtros de idioma, país, estilo, época o lugar de grabación.
+- [ ] Recolectar lotes de fuentes mundiales abiertas y autorizadas.
+- [ ] Separar encontradas, licencia verificable y reproducibles ahora en el contador.
+- [ ] Mantener Play y atribución como únicos filtros técnicos obligatorios.
+
+- [ ] Reinvestigar Openverse Audio y sus proveedores con los nuevos criterios de volumen, licencia y Play real.
+- [ ] Probar fuentes candidatas adicionales y sus streams con una muestra representativa.
+- [ ] Comparar volumen indexado, licencia, atribución, estabilidad y restricciones de uso.
+- [ ] Actualizar la decisión de integración de fuentes antes de modificar nowarfy.
+
+- [x] Investigar capacidades oficiales de Bandcamp para descubrimiento, metadata y reproducción embebida.
+- [x] Comparar sus límites de API, embeds, permisos y estabilidad con las fuentes actuales.
+- [x] Decidir si Bandcamp puede ser fuente interna, descubrimiento o solo referencia externa.
+- [x] Documentar la decisión sin raspar ni retransmitir audio fuera de mecanismos autorizados.
+
+- [ ] Mostrar la lista diversa de música reproducible desde el primer vistazo de la home.
+- [ ] Mostrar junto a la lista un contador calculado sobre pistas reales con Play funcional.
+- [ ] Mantener visibles y centradas las cinco esferas con rotación táctil y Play directo.
+- [ ] Validar responsive, estados vacíos y accesibilidad de la nueva composición.
+- [ ] Priorizar la carga del catálogo Openverse en la home antes de iniciar búsquedas lentas de estaciones
+- [ ] Verificar visualmente que el contador y la lista muestran pistas reproducibles tras la carga prioritaria
+- [ ] Guardar checkpoint con la corrección de carga prioritaria y pruebas actualizadas
