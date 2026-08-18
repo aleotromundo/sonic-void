@@ -40,3 +40,7 @@ Las capturas local de escritorio y móvil mantienen los cinco círculos dentro d
 El push de `c1013d9e` llegó correctamente a `aleotromundo/sonic-void` en `main`. En Vercel, el panel consultado después del push todavía muestra `cbd07df` como Production Deployment en estado Ready; por lo tanto, no se debe afirmar que c1013d9e ya esté en producción. El dominio `nowarfy.vercel.app` carga la SPA, muestra los cinco botones de estación, las filas y Full Signal, pero la confirmación textual no permite verificar el arte de cada círculo en esta consulta.
 
 Vercel registra 605 edge requests, 192 invocaciones y una tasa de error histórica del 100 %. Ese dato debe tratarse como observabilidad acumulada y no como prueba aislada de que la SPA actual esté caída; falta revisar el endpoint tRPC y los logs del deployment nuevo cuando Vercel lo detecte.
+
+## Rediseño de esferas y catálogo visible
+
+Las capturas desktop y móvil muestran las cinco esferas centradas en el hero y una sección `Música disponible ahora` con contador visible. La interacción táctil está implementada sobre el contenedor orbital mediante Pointer Events y conserva botones individuales accesibles. En el estado actual de las fuentes, el contador muestra 0 y la lista informa que espera audio validado; esto es correcto y honesto, pero evidencia que la mejora de cantidad musical depende de que Jamendo/Audius respondan o de integrar otra fuente autorizada.

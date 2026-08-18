@@ -290,7 +290,7 @@
 
 - [x] Auditar latencias, errores y límites de Jamendo y Audius con mediciones separadas por etapa.
 - [x] Diseñar timeouts, circuit breaker, caché y validación de streams sin bloquear la búsqueda.
-- [ ] Evaluar una fuente de audio adicional con stream directo, licencia verificable y API estable.
+- [x] Evaluar una fuente de audio adicional con stream directo, licencia verificable y API estable.
 - [x] Documentar una estrategia priorizada de implementación y métricas de éxito.
 
 - [x] Implementar `probePlayableStream` server-side con HEAD/Range, timeout y límites de respuesta.
@@ -353,3 +353,10 @@
 - [x] Reproducir y aislar `FUNCTION_INVOCATION_FAILED` en `/api/trpc/auth.me` del dominio público.
 - [x] Corregir el entrypoint serverless para que Vercel inicialice Express/tRPC sin depender del listener local.
 - [ ] Validar `/api/trpc/auth.me`, estado de proveedores y búsqueda real en Vercel después del fix.
+
+- [x] Centrar las cinco esferas en el hero y mejorar su composición visual.
+- [x] Añadir rotación y respuesta táctil accesible al interactuar con cada esfera.
+- [x] Mostrar una lista diversa de pistas reales reproducibles sin filtros decorativos.
+- [x] Mostrar un contador honesto de canciones disponibles junto a la lista.
+- [x] Mantener Play directo, licencias, atribución y estado de fuente en cada pista.
+- [x] Probar escritorio, móvil, reduced-motion y publicar la mejora.

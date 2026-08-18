@@ -27,3 +27,7 @@ Audio Commons es una iniciativa y ecosistema de herramientas para contenido de a
 
 [3]: https://ccmixter.org/isitlegal — ccMixter: Permission to Use Query API.
 [4]: https://audiocommons.github.io/about/ — Audio Commons: About and ecosystem.
+
+## Verificación adicional de ccMixter
+
+El Query API devuelve metadata JSON, archivos MP3, licencias y atribución correctamente. Sin embargo, al probar un `download_url` real desde el entorno, el servidor devolvió `403 Forbidden` tanto para `HEAD` como para un `GET` parcial con `Range`. Por coherencia con la regla de nowarfy, ccMixter no debe aumentar el contador ni aparecer como Play disponible hasta que una URL de audio responda de forma reproducible en el navegador. El adaptador queda aislado como fallback experimental, pero la validación server-side lo excluye mientras el stream no sea accesible.

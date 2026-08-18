@@ -1,6 +1,6 @@
 export type LocalQueueItem = {
   id: string;
-  source: "spotify" | "musicbrainz" | "audius" | "jamendo";
+  source: "spotify" | "musicbrainz" | "audius" | "jamendo" | "ccmixter";
   kind: "track" | "album";
   name: string;
   artist: string;
