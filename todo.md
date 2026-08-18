@@ -400,3 +400,6 @@
 - [ ] Priorizar la carga del catálogo Openverse en la home antes de iniciar búsquedas lentas de estaciones
 - [ ] Verificar visualmente que el contador y la lista muestran pistas reproducibles tras la carga prioritaria
 - [ ] Guardar checkpoint con la corrección de carga prioritaria y pruebas actualizadas
+- [ ] Diagnosticar por qué Vercel muestra una versión anterior a Manus/GitHub
+- [ ] Verificar rama, commit y configuración de build del proyecto Vercel
+- [ ] Confirmar la versión pública de Vercel o documentar la acción manual necesaria
