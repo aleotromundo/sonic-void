@@ -9,3 +9,11 @@ El panel de Observability muestra 151 invocaciones y una tasa de error del 100 %
 El panel de Vercel ofrece Deployment Settings, Deployments, Logs y Environment Variables. No se modificó configuración ni se inició ninguna operación sensible durante esta auditoría.
 
 Fuente externa: página pública autenticada de Vercel, consultada el 2026-08-18.
+
+## Seguimiento posterior al push
+
+Después de `git push github main` con el commit `cbd07df0`, Vercel detectó un deployment nuevo asociado al mensaje de las filas Más escuchado, Recomendados y Seguí vos. Durante la consulta de las 17:22 (GMT-3), el deployment nuevo todavía aparecía como `Building`, mientras la Production Deployment seguía mostrando temporalmente `c160b15` y el dominio `nowarfy.vercel.app` continuaba apuntando al deployment anterior. El panel mostraba 179 invocaciones y una tasa de error del 100 %, por lo que hay que revisar Logs cuando el build termine.
+
+URL del proyecto: https://vercel.com/agradecidos-projects/nowarfy
+Repositorio: https://github.com/aleotromundo/sonic-void
+Dominio: https://nowarfy.vercel.app

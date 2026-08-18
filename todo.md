@@ -236,15 +236,15 @@
 - [ ] Verificar variables de entorno y activar un redeploy de Vercel sin modificar secretos innecesariamente.
 - [ ] Confirmar que `nowarfy.vercel.app` sirva la SPA y que `/api/trpc` responda correctamente.
 
-- [ ] Crear favicon original responsivo para nowarfy Sonic//Void Radio.
-- [ ] Actualizar título, descripción, manifest y referencias de marca de la aplicación.
-- [ ] Validar la identidad en build, navegador y PWA.
+- [x] Crear favicon original responsivo para nowarfy Sonic//Void Radio.
+- [x] Actualizar título, descripción, manifest y referencias de marca de la aplicación.
+- [x] Validar la identidad en build, navegador y PWA.
 
 - [x] Mostrar al abrir nowarfy señales, artistas y playlists con pistas reproducibles reales.
 - [x] Añadir pruebas de estado inicial, carga de catálogo y disponibilidad de audio.
 - [ ] Verificar después de publicar Manus Space, Vercel y `/api/trpc` con una búsqueda real.
 
-- [ ] Auditar radios y catálogos con streams o previews legalmente reproducibles dentro de nowarfy.
+- [x] Auditar radios y catálogos con streams o previews legalmente reproducibles dentro de nowarfy.
 - [x] Añadir estaciones internas con botón Play y estado de reproducción visible.
 - [x] Mantener licencia y atribución dentro del sitio sin mostrar enlaces externos como acción principal.
 - [ ] Validar que las estaciones funcionen en Manus Space y Vercel con pruebas reales.
@@ -253,15 +253,15 @@
 - [x] Añadir escena 3D/WebGL con fallback Canvas y controles de intensidad, color y salida.
 - [x] Cubrir con pruebas el fallback, reduced motion y activación del modo inmersivo.
 
-- [ ] Auditar fuentes libres, Creative Commons, radios y grabaciones de artistas conocidos con reproducción autorizada.
-- [ ] Aplicar una validación de stream/preview antes de mostrar cualquier resultado o estación.
-- [ ] Clasificar directos, históricos y catálogo conocido según licencia y tipo de audio verificable.
-- [ ] Probar las fuentes y publicar únicamente opciones con Play funcional.
+- [x] Auditar fuentes libres, Creative Commons, radios y grabaciones de artistas conocidos con reproducción autorizada.
+- [x] Aplicar una validación de stream/preview antes de mostrar cualquier resultado o estación.
+- [x] Clasificar directos, históricos y catálogo conocido según licencia y tipo de audio verificable.
+- [x] Probar las fuentes y publicar únicamente opciones con Play funcional.
 
 - [ ] Sincronizar cada bloque validado con GitHub y comprobar el deployment correspondiente en Vercel antes de continuar.
 
-- [ ] Hacer visible el botón Full Signal en escritorio y móvil, con indicador claro de que abre las visualizaciones.
-- [ ] Probar el acceso visual en Manus Space, Vercel y el preview local.
+- [x] Hacer visible el botón Full Signal en escritorio y móvil, con indicador claro de que abre las visualizaciones.
+- [x] Probar el acceso visual en Manus Space, Vercel y el preview local.
 
 - [ ] Completar auditoría integral de funcionalidades, pruebas, despliegues y documentación.
 - [ ] Cerrar o documentar honestamente cualquier pendiente restante antes del informe final.
@@ -276,8 +276,8 @@
 - [x] Validar el hero circular en escritorio y móvil y sincronizar el cambio.
 
 - [ ] Definir una actualización periódica controlada para ampliar estaciones con pistas legales reproducibles.
-- [ ] Evitar búsquedas infinitas, duplicados, streams inválidos y tareas en segundo plano sin límites.
-- [ ] Añadir estado visible de última actualización y fallos de fuentes.
+- [x] Evitar búsquedas infinitas, duplicados, streams inválidos y tareas en segundo plano sin límites.
+- [x] Añadir estado visible de última actualización y fallos de fuentes.
 
 - [x] Implementar catálogo liviano con URLs de audio autorizadas y metadatos, sin almacenar archivos pesados.
 - [x] Deduplicar pistas por fuente/identificador y conservar licencia, atribución y estado reproducible.
@@ -288,10 +288,10 @@
 - [x] Actualizar pruebas y validar que la búsqueda real siga funcionando sin filtros inventados.
 - [x] Guardar checkpoint de la corrección de enfoque musical.
 
-- [ ] Auditar latencias, errores y límites de Jamendo y Audius con mediciones separadas por etapa.
-- [ ] Diseñar timeouts, circuit breaker, caché y validación de streams sin bloquear la búsqueda.
+- [x] Auditar latencias, errores y límites de Jamendo y Audius con mediciones separadas por etapa.
+- [x] Diseñar timeouts, circuit breaker, caché y validación de streams sin bloquear la búsqueda.
 - [ ] Evaluar una fuente de audio adicional con stream directo, licencia verificable y API estable.
-- [ ] Documentar una estrategia priorizada de implementación y métricas de éxito.
+- [x] Documentar una estrategia priorizada de implementación y métricas de éxito.
 
 - [x] Implementar `probePlayableStream` server-side con HEAD/Range, timeout y límites de respuesta.
 - [x] Conectar la validación a Jamendo y Audius antes de devolver pistas al cliente.
@@ -325,3 +325,27 @@
 - [x] Priorizar reproducción directa, filas de descubrimiento, cola persistente y navegación contextual como referencias de experiencia.
 - [x] Evitar copiar logos, textos, código, assets, marca o contenido protegido de servicios externos.
 - [x] Documentar y validar la próxima mejora de nowarfy sobre fuentes legales y pistas reproducibles.
+
+- [x] Auditar coherencia entre la promesa de nowarfy y la música realmente reproducible.
+- [x] Auditar que la home mantenga cinco estaciones, filas Más escuchado/Recomendados/Seguí vos y Play interno.
+- [x] Auditar que cola, autoplay, letras, Full Signal, licencias y atribuciones no se contradigan.
+- [x] Auditar consistencia entre Manus Space, GitHub y Vercel sin asumir que un build en curso ya está publicado.
+- [x] Corregir inconsistencias comprobadas y documentar pendientes antes de seguir agregando funciones.
+
+- [x] Reforzar la continuidad para seleccionar y preparar siempre la siguiente pista reproducible disponible.
+- [x] Evitar que la radio repita pistas, bloquee la cola o muestre una pista sin stream validado.
+- [x] Medir por separado la salud y latencia de Spotify, Jamendo y Audius antes de elegir fallback.
+- [x] Evaluar una API de Google solo para descubrimiento o metadata legal, sin extraer ni retransmitir audio restringido.
+- [ ] Probar la continuidad en local, Manus Space y Vercel antes de publicar.
+
+- [x] Documentar que Spotify, YouTube y Google son referencias opcionales de experiencia, no fuentes necesarias del catálogo.
+- [x] Recopilar rápidamente fuentes alternativas con audio legal, stream verificable, metadata y atribución.
+- [x] Separar fuentes de audio, fuentes de metadata, carátulas y letras para no mezclarlas como si fueran reproducción.
+- [x] Definir un conjunto prioritario de fuentes alternativas para nowarfy y descartar las que no permitan Play estable.
+- [x] Guardar la investigación y actualizar la arquitectura de catálogo sin agregar fuentes no verificadas.
+
+- [x] Auditar los defectos visibles y elegir mejoras de mayor impacto antes de agregar funciones nuevas.
+- [x] Pulir reproducción continua, selección anticipada y fallbacks sin repetir ni mostrar streams inválidos.
+- [ ] Estabilizar Jamendo/Audius y preparar una integración experimental de ccMixter solo si supera las validaciones.
+- [x] Refinar home, player, Full Signal, accesibilidad y responsive.
+- [ ] Validar local, Manus Space, GitHub y Vercel, documentando cualquier límite restante.

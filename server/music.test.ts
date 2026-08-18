@@ -1,6 +1,6 @@
 import axios from "axios";
 import { describe, expect, it, vi } from "vitest";
-import { applySearchFilters, emptySearchResult, getGeniusLyrics, interpretQuery, isSpotifyConfigured, matchesAudioCandidate, matchesAudioQuery, matchesJamendoCandidate, matchesJamendoQuery, probePlayableStream, rankMusicTracks, searchMusic, searchSpotify } from "./music";
+import { applySearchFilters, emptySearchResult, getAudioProviderHealth, getGeniusLyrics, interpretQuery, isSpotifyConfigured, matchesAudioCandidate, matchesAudioQuery, matchesJamendoCandidate, matchesJamendoQuery, probePlayableStream, rankMusicTracks, searchMusic, searchSpotify } from "./music";
 
 describe("music integrations", () => {
   it("interprets natural artist and album queries", () => {
@@ -109,6 +109,13 @@ describe("music integrations", () => {
     delete process.env.SPOTIFY_CLIENT_SECRET;
     expect(await isSpotifyConfigured()).toBe(false);
     await expect(searchSpotify("test", 0)).resolves.toBeNull();
+  });
+
+  it("exposes bounded provider health without exposing credentials", () => {
+    const health = getAudioProviderHealth();
+    expect(health.jamendo).toEqual(expect.objectContaining({ failures: expect.any(Number), openUntil: expect.any(Number), lastLatencyMs: expect.anything(), lastFailure: expect.anything() }));
+    expect(health.audius).toEqual(expect.objectContaining({ failures: expect.any(Number), openUntil: expect.any(Number), lastLatencyMs: expect.anything(), lastFailure: expect.anything() }));
+    expect(health).not.toHaveProperty("token");
   });
 
   it("returns a clear setup state for lyrics without a Genius token", async () => {

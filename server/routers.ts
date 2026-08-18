@@ -3,7 +3,7 @@ import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
-import { getLrclibLyrics, isSpotifyConfigured, searchMusic } from "./music";
+import { getAudioProviderHealth, getLrclibLyrics, isSpotifyConfigured, searchMusic } from "./music";
 
 export const appRouter = router({
   system: systemRouter,
@@ -16,7 +16,7 @@ export const appRouter = router({
     }),
   }),
   music: router({
-    status: publicProcedure.query(async () => ({ spotifyConfigured: await isSpotifyConfigured() })),
+    status: publicProcedure.query(async () => ({ spotifyConfigured: await isSpotifyConfigured(), providers: getAudioProviderHealth() })),
     search: publicProcedure
       .input(z.object({ query: z.string().trim().min(1).max(120), offset: z.number().int().min(0).max(1000).default(0) }))
       .query(async ({ input }) => ({ query: input.query, ...(await searchMusic(input.query, input.offset, 12)) })),
