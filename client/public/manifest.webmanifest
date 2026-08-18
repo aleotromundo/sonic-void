@@ -1,11 +1,20 @@
 {
-  "name": "Sonic//Void Music Finder",
-  "short_name": "Sonic//Void",
-  "description": "Un buscador musical personal con biblioteca local y reproducción autorizada.",
-  "start_url": "/",
-  "display": "standalone",
-  "background_color": "#07080c",
-  "theme_color": "#ff2db2",
+  "name": "nowarfy — Sonic//Void Radio",
+  "short_name": "nowarfy",
+  "description": "Radio personal cyberpunk para descubrir y escuchar música con audio autorizado.",
   "lang": "es",
-  "icons": []
+  "dir": "ltr",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#080a12",
+  "theme_color": "#ff2db2",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
 }

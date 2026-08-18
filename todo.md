@@ -235,3 +235,27 @@
 - [ ] Revisar y corregir la conexión del proyecto nowarfy con `aleotromundo/sonic-void`, rama `main` y Root Directory en Vercel.
 - [ ] Verificar variables de entorno y activar un redeploy de Vercel sin modificar secretos innecesariamente.
 - [ ] Confirmar que `nowarfy.vercel.app` sirva la SPA y que `/api/trpc` responda correctamente.
+
+- [ ] Crear favicon original responsivo para nowarfy Sonic//Void Radio.
+- [ ] Actualizar título, descripción, manifest y referencias de marca de la aplicación.
+- [ ] Validar la identidad en build, navegador y PWA.
+
+- [x] Mostrar al abrir nowarfy señales, artistas y playlists con pistas reproducibles reales.
+- [x] Añadir pruebas de estado inicial, carga de catálogo y disponibilidad de audio.
+- [ ] Verificar después de publicar Manus Space, Vercel y `/api/trpc` con una búsqueda real.
+
+- [ ] Auditar radios y catálogos con streams o previews legalmente reproducibles dentro de nowarfy.
+- [x] Añadir estaciones internas con botón Play y estado de reproducción visible.
+- [x] Mantener licencia y atribución dentro del sitio sin mostrar enlaces externos como acción principal.
+- [ ] Validar que las estaciones funcionen en Manus Space y Vercel con pruebas reales.
+
+- [x] Crear modo Full Signal a pantalla completa sincronizado con la señal de audio.
+- [x] Añadir escena 3D/WebGL con fallback Canvas y controles de intensidad, color y salida.
+- [x] Cubrir con pruebas el fallback, reduced motion y activación del modo inmersivo.
+
+- [ ] Auditar fuentes libres, Creative Commons, radios y grabaciones de artistas conocidos con reproducción autorizada.
+- [ ] Aplicar una validación de stream/preview antes de mostrar cualquier resultado o estación.
+- [ ] Clasificar directos, históricos y catálogo conocido según licencia y tipo de audio verificable.
+- [ ] Probar las fuentes y publicar únicamente opciones con Play funcional.
+
+- [ ] Sincronizar cada bloque validado con GitHub y comprobar el deployment correspondiente en Vercel antes de continuar.
