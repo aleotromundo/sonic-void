@@ -3,17 +3,32 @@ import React from "react";
 import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { AudioVisualizer, Player, spectrumToBarLevel } from "./Home";
+import { AudioVisualizer, Player, pickAutoplayTrack, spectrumToBarLevel, type Track } from "./Home";
 import { ButterchurnVisualizer } from "../components/ButterchurnVisualizer";
 
 const track = { id: "audius-1", source: "audius" as const, kind: "track" as const, name: "Open Signal", artist: "Open Artist", album: "Audius", releaseYear: "2024", durationMs: 120000, durationLabel: "2:00", popularity: 0, imageUrl: null, spotifyUrl: "https://audius.co/open-artist/open-signal", previewUrl: "https://api.audius.co/v1/tracks/audius-1/stream", availableMarkets: [], licenseLabel: "Licencia indicada por el creador", attribution: "Open Artist · Audius", licenseUrl: "https://audius.co/open-artist/open-signal" };
 const baseProps = { active: true, track, lyricLine: undefined, currentTime: 0, duration: 0, volume: 0.8, onTimeUpdate: vi.fn(), onLoadedMetadata: vi.fn(), onVolumeChange: vi.fn(), onNext: vi.fn(), onPrevious: vi.fn(), onClose: vi.fn() };
+const related = (id: string, name: string, artist = "Open Artist", previewUrl: string | null = `https://audio.example/${id}.mp3`): Track => ({ ...track, id, name, artist, previewUrl });
 
 afterEach(() => cleanup());
 
 beforeEach(() => { vi.restoreAllMocks(); vi.stubGlobal("MediaMetadata", class { constructor(public readonly init: unknown) {} }); vi.spyOn(HTMLMediaElement.prototype, "play").mockResolvedValue(undefined); vi.spyOn(HTMLMediaElement.prototype, "pause").mockImplementation(() => undefined); Object.defineProperty(window.navigator, "mediaSession", { configurable: true, value: { metadata: null, setActionHandler: vi.fn() } }); });
 
 describe("Player", () => {
+  it("selects the next playable queue item before searching the catalogue", () => {
+    const current = related("current", "Current Signal");
+    const queued = related("queued", "Queued Signal");
+    const metadataOnly = related("metadata", "Metadata Only", "Open Artist", null);
+    expect(pickAutoplayTrack(current, [current, metadataOnly, queued], [related("catalogue", "Catalogue Signal")])?.id).toBe("queued");
+  });
+
+  it("finds a similar playable catalogue item and ignores metadata-only results", () => {
+    const current = related("current", "Current Signal");
+    const similar = related("similar", "Another Signal");
+    const metadataOnly = related("metadata", "No Audio", "Open Artist", null);
+    expect(pickAutoplayTrack(current, [], [metadataOnly, similar])?.id).toBe("similar");
+  });
+
   it("maps frequency levels to bounded bar heights and keeps responsive classes", () => {
     expect(spectrumToBarLevel(1, 0.5)).toBeGreaterThan(spectrumToBarLevel(0, 0.5));
     expect(spectrumToBarLevel(5, 0.5)).toBe(spectrumToBarLevel(1, 0.5));

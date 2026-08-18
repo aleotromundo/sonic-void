@@ -29,6 +29,24 @@ describe("TrackGrid Jamendo", () => {
           attribution: "Open Artist · Jamendo",
           licenseUrl: "https://www.jamendo.com/track/jamendo-1",
           matchMode: "discovery",
+        }, {
+          id: "musicbrainz-no-audio",
+          source: "musicbrainz",
+          kind: "track",
+          name: "Metadata Only",
+          artist: "No Stream Artist",
+          album: "Catalog",
+          releaseYear: "2026",
+          durationMs: 120000,
+          durationLabel: "2:00",
+          popularity: 0,
+          imageUrl: null,
+          spotifyUrl: "https://musicbrainz.org/recording/no-audio",
+          previewUrl: null,
+          availableMarkets: [],
+          licenseLabel: "Sin audio reproducible",
+          attribution: "MusicBrainz",
+          licenseUrl: "https://musicbrainz.org/recording/no-audio",
         }]}
         favorites={[]}
         onFavorite={vi.fn()}
@@ -41,5 +59,6 @@ describe("TrackGrid Jamendo", () => {
 
     expect(screen.getByText("Jamendo · descubrimiento")).toBeTruthy();
     expect(screen.getByRole("button", { name: "Reproducir Ethereal Ambient" })).toBeTruthy();
+    expect(screen.queryByText("Metadata Only")).toBeNull();
   });
 });

@@ -200,3 +200,18 @@
 - [x] Preparar configuración Vercel con `vercel.json`, entrypoint serverless y rutas para SPA/tRPC.
 - [x] Documentar variables de entorno y pasos de despliegue en Vercel.
 - [x] Validar build, TypeScript y pruebas después de la adaptación Vercel.
+
+- [x] Ocultar de la grilla y resultados finales todas las pistas sin `previewUrl` reproducible.
+- [x] Auditar fuentes legales adicionales con API o streams gratuitos y documentar licencia, atribución y límites.
+- [x] Añadir pruebas de que la búsqueda solo muestra resultados reproducibles y conserva estados vacíos claros.
+
+- [x] Implementar reproducción continua al finalizar una pista usando solo opciones reproducibles y autorizadas.
+- [x] Seleccionar automáticamente una pista similar de la cola o del catálogo disponible sin pedir permiso adicional.
+- [x] Priorizar artistas conocidos con preview autorizada y mantener alternativas libres reproducibles visibles.
+- [x] Añadir pruebas de finalización de audio, selección de siguiente pista y fallback seguro.
+
+- [x] Preparar la próxima pista reproducible al iniciar la pista actual, sin esperar a `ended`.
+- [x] Hacer que `onEnded` consuma la pista anticipada y deje fallback seguro solo si la preparación falló.
+- [x] Añadir pruebas de planificación anticipada, cola preparada y transición instantánea.
+
+- [ ] Sincronizar la versión validada de Sonic//Void con Manus Space y el repositorio privado de GitHub para comparación.
