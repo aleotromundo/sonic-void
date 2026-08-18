@@ -149,7 +149,7 @@
         <!-- CONTENIDO -->
         <div class="content-area">
             <div class="search-container">
-                <input type="text" class="search-input" id="searchInput" placeholder="Busca cualquier cosa: Nirvana, Tool, Rock..." onkeyup="handleSearchDebounced()">
+                <input type="text" class="search-input" id="searchInput" placeholder="¿Qué quieres escuchar? (Busca en YouTube)" onkeyup="handleSearchDebounced()">
             </div>
 
             <!-- Selector de Ánimo -->
@@ -158,7 +158,7 @@
                 <button class="mood-btn mood-relax" onclick="setMood('relax')">☁️ Relax</button>
                 <button class="mood-btn mood-party" onclick="setMood('party')">🍸 Fiesta</button>
                 <button class="mood-btn mood-sad" onclick="setMood('sad')">Melancolía</button>
-                <button class="mood-btn mood-focus" onclick="setMood('focus')">🧠 Enfoque</button>
+                <button class="mood-btn mood-focus" onclick="setMood('focus')"> Enfoque</button>
             </div>
 
             <div id="loader" class="loader"><i class="fas fa-circle-notch fa-spin"></i> Buscando en el universo...</div>
@@ -339,7 +339,8 @@
                     img: track.thumbnail || 'https://via.placeholder.com/300x180?text=Music',
                     url: track.url,
                     type: 'mp3',
-                    genre: track.genres[0] || 'unknown',
+                    // CORRECCIÓN DE SEGURIDAD PARA GENRES
+                    genre: (track.genres && track.genres.length > 0) ? track.genres[0] : 'unknown',
                     mood: 'unknown'
                 }));
                 currentList = mappedResults;
