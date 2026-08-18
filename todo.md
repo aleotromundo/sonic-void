@@ -25,3 +25,8 @@
 - [x] Actualizar pruebas, verificación visual y checkpoint de la adaptación alternativa
 - [x] Corregir mensajes de error y vacío para que distingan MusicBrainz de Spotify, y mostrar la fuente en cada resultado o detalle
 - [x] Guardar un nuevo checkpoint después de la adaptación MusicBrainz/Cover Art Archive validada
+- [x] Activar Spotify con las credenciales nuevas cargadas mediante el formulario seguro
+- [x] Verificar la aplicación con Spotify activo y guardar un checkpoint actualizado
+- [x] Verificar de extremo a extremo una búsqueda real con Spotify activo y confirmar fallback seguro cuando el endpoint Spotify responde 403
+- [x] Guardar el checkpoint final después de la verificación end-to-end de Spotify
+- [ ] Guardar un checkpoint posterior a la verificación final y al manejo de respuestas 401/403/429 de Spotify

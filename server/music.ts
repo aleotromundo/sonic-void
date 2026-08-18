@@ -49,7 +49,14 @@ function toSpotifyTrack(track: any): MusicTrack {
 async function fetchSpotify(query: string, offset: number, limit: number) {
   const token = await getSpotifyToken();
   if (!token) return null;
-  const response = await axios.get("https://api.spotify.com/v1/search", { params: { q: query, type: "track", limit, offset, market: "US" }, headers: { Authorization: `Bearer ${token}` }, timeout: 10_000 });
+  let response;
+  try {
+    response = await axios.get("https://api.spotify.com/v1/search", { params: { q: query, type: "track", limit, offset, market: "US" }, headers: { Authorization: `Bearer ${token}` }, timeout: 10_000 });
+  } catch (error: any) {
+    const status = error?.response?.status;
+    if (status === 401 || status === 403 || status === 429) return null;
+    throw error;
+  }
   const tracks = response.data.tracks;
   const items = tracks.items.map(toSpotifyTrack);
   return { configured: true, source: "spotify" as const, items, total: tracks.total, nextOffset: offset + items.length < tracks.total ? offset + items.length : null };
