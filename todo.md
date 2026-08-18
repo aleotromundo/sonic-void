@@ -214,4 +214,4 @@
 - [x] Hacer que `onEnded` consuma la pista anticipada y deje fallback seguro solo si la preparación falló.
 - [x] Añadir pruebas de planificación anticipada, cola preparada y transición instantánea.
 
-- [ ] Sincronizar la versión validada de Sonic//Void con Manus Space y el repositorio privado de GitHub para comparación.
+- [x] Sincronizar la versión validada de Sonic//Void con Manus Space y el repositorio privado de GitHub para comparación.
