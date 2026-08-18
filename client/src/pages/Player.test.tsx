@@ -4,6 +4,7 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AudioVisualizer, Player, spectrumToBarLevel } from "./Home";
+import { ButterchurnVisualizer } from "../components/ButterchurnVisualizer";
 
 const track = { id: "audius-1", source: "audius" as const, kind: "track" as const, name: "Open Signal", artist: "Open Artist", album: "Audius", releaseYear: "2024", durationMs: 120000, durationLabel: "2:00", popularity: 0, imageUrl: null, spotifyUrl: "https://audius.co/open-artist/open-signal", previewUrl: "https://api.audius.co/v1/tracks/audius-1/stream", availableMarkets: [], licenseLabel: "Licencia indicada por el creador", attribution: "Open Artist · Audius", licenseUrl: "https://audius.co/open-artist/open-signal" };
 const baseProps = { active: true, track, lyricLine: undefined, currentTime: 0, duration: 0, volume: 0.8, onTimeUpdate: vi.fn(), onLoadedMetadata: vi.fn(), onVolumeChange: vi.fn(), onNext: vi.fn(), onPrevious: vi.fn(), onClose: vi.fn() };
@@ -26,6 +27,12 @@ describe("Player", () => {
     expect(screen.getByRole("img", { name: "Ecualizador visual en pausa" })).toBeInTheDocument();
     rerender(<AudioVisualizer isPlaying currentTime={12} />);
     expect(screen.getByRole("img", { name: "Ecualizador visual activo" })).toBeInTheDocument();
+  });
+
+  it("keeps the Butterchurn fallback visible while WebGL is unavailable or reduced motion is requested", () => {
+    render(<ButterchurnVisualizer isPlaying reducedMotion fallback={<span>Canvas fallback</span>} />);
+    expect(screen.getByText("Canvas fallback")).toBeInTheDocument();
+    expect(document.querySelector("canvas")).toBeInTheDocument();
   });
 
   it("renders an audio element and invokes Play/Pause callback", () => {

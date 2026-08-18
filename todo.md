@@ -183,8 +183,20 @@
 - [x] Desactivar completamente el requestAnimationFrame durante prefers-reduced-motion
 - [x] Agregar pruebas del visualizador y verificar reproductor en escritorio/móvil
 - [x] Probar transformación de frecuencias a barras y layout responsive del visualizador
-- [ ] Guardar checkpoint del visualizador tipo MilkDrop original
+- [x] Guardar checkpoint del visualizador tipo MilkDrop original
+- [ ] Confirmar licencia MIT de Butterchurn y licencia explícita de presets seleccionados
+- [ ] Instalar Butterchurn y su paquete de presets compatible
+- [ ] Integrar el motor WebGL con AudioContext y fallback Canvas
+- [ ] Mostrar nombre, licencia y atribución del preset activo
+- [ ] Añadir pruebas de carga, selección, WebGL ausente y reduced motion
+- [ ] Guardar checkpoint de la integración Butterchurn
 - [x] Inspeccionar remotos GitHub existentes y estado del repositorio local
 - [x] Confirmar que secretos y archivos `.env` no entren al repositorio
 - [x] Crear o conectar un repositorio privado de Sonic//Void en GitHub
 - [x] Verificar el push y entregar el enlace del repositorio privado
+
+- [x] Diagnosticar y corregir el error del despliegue externo en Vercel para Sonic//Void, verificando build, variables de entorno y rutas del servidor.
+
+- [x] Preparar configuración Vercel con `vercel.json`, entrypoint serverless y rutas para SPA/tRPC.
+- [x] Documentar variables de entorno y pasos de despliegue en Vercel.
+- [x] Validar build, TypeScript y pruebas después de la adaptación Vercel.
