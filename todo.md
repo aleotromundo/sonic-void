@@ -184,7 +184,7 @@
 - [x] Agregar pruebas del visualizador y verificar reproductor en escritorio/móvil
 - [x] Probar transformación de frecuencias a barras y layout responsive del visualizador
 - [ ] Guardar checkpoint del visualizador tipo MilkDrop original
-- [ ] Inspeccionar remotos GitHub existentes y estado del repositorio local
-- [ ] Confirmar que secretos y archivos `.env` no entren al repositorio
-- [ ] Crear o conectar un repositorio privado de Sonic//Void en GitHub
-- [ ] Verificar el push y entregar el enlace del repositorio privado
+- [x] Inspeccionar remotos GitHub existentes y estado del repositorio local
+- [x] Confirmar que secretos y archivos `.env` no entren al repositorio
+- [x] Crear o conectar un repositorio privado de Sonic//Void en GitHub
+- [x] Verificar el push y entregar el enlace del repositorio privado
