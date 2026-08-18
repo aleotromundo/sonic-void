@@ -7,3 +7,7 @@ Cuando una pista incluye una `previewUrl` autorizada, el reproductor usa un elem
 MusicBrainz y Cover Art Archive no entregan audio, por lo que sus resultados permanecen en estado «Preview no disponible». La reproducción en segundo plano solo se activa para previews que la fuente entregue legalmente. El catálogo completo de Spotify requerirá OAuth de usuario y Web Playback SDK con una cuenta compatible.
 
 La verificación realizada cubre compilación TypeScript, pruebas Vitest y capturas de escritorio y móvil con la barra idle visible. La prueba práctica de lock screen depende de que el navegador y el dispositivo proporcionen una preview autorizada y soporte Media Session.
+
+## Estado de verificación de preview
+
+En la verificación actual, los resultados observados desde MusicBrainz/Cover Art Archive tienen `previewUrl: null`, por lo que la prueba funcional de pantalla bloqueada no puede ejecutarse con una pista real de esas fuentes. El código queda preparado para activarse automáticamente cuando una fuente de audio autorizada, como una futura integración de Jamendo, entregue una URL de preview. Hasta entonces, el estado visible correcto es «Preview no disponible» y no se intenta reproducir audio sin permiso.

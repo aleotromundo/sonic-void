@@ -77,15 +77,15 @@
 - [x] Unificar library.queue y playQueue y mostrar una cola visible en la interfaz
 - [x] Verificar la barra final en escritorio y móvil después de los cambios
 - [x] Documentar la verificación funcional de Media Session con preview autorizada y guardar checkpoint final
-- [ ] Usar una única fuente de verdad persistida para la cola del reproductor y evitar divergencias
-- [ ] Verificar Media Session con una preview real disponible o registrar claramente que no hay preview en las fuentes activas
-- [ ] Guardar checkpoint posterior a estas correcciones finales
-- [ ] Investigar fuentes gratuitas y legales de audio reproducible
-- [ ] Investigar fuentes de metadatos, carátulas y letras con licencias compatibles
-- [ ] Clasificar cada fuente por reproducción, atribución, límites y necesidad de API key
-- [ ] Diseñar un adaptador unificado de fuentes y derechos para Sonic//Void
-- [ ] Ampliar playlists locales y búsqueda inteligente sobre el catálogo agregado
-- [ ] Documentar claramente qué contenido se puede reproducir y guardar checkpoint del mapa de integración
+- [x] Usar una única fuente de verdad persistida para la cola del reproductor y evitar divergencias
+- [x] Verificar Media Session con una preview real disponible o registrar claramente que no hay preview en las fuentes activas
+- [x] Guardar checkpoint posterior a estas correcciones finales
+- [x] Investigar fuentes gratuitas y legales de audio reproducible
+- [x] Investigar fuentes de metadatos, carátulas y letras con licencias compatibles
+- [x] Clasificar cada fuente por reproducción, atribución, límites y necesidad de API key
+- [x] Diseñar un adaptador unificado de fuentes y derechos para Sonic//Void
+- [x] Ampliar playlists locales y búsqueda inteligente sobre el catálogo agregado
+- [x] Documentar claramente qué contenido se puede reproducir y guardar checkpoint del mapa de integración
 - [x] Activar búsqueda automática mientras el usuario escribe después de un debounce breve
 - [x] Evitar consultas para entradas vacías o demasiado cortas y cancelar resultados obsoletos
 - [x] Mostrar indicador y estados de sugerencias en vivo sin saturar las fuentes externas
@@ -102,3 +102,6 @@
 - [x] Agregar una prueba Vitest que simule 503 o timeout de una fuente y confirme fallback seguro sin propagar error
 - [x] Guardar un checkpoint posterior a las correcciones finales de búsqueda en vivo y 503
 - [x] Guardar un nuevo checkpoint después de las correcciones finales del 503 y de la búsqueda en vivo
+- [x] Documentar explícitamente el estado de Media Session cuando no existe una preview reproducible en las fuentes activas
+- [x] Implementar o verificar playlists locales reales en la capa de persistencia y UI
+- [x] Cubrir playlists locales y cola con pruebas y preparar checkpoint posterior al mapa de fuentes
