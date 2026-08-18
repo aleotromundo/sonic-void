@@ -1,6 +1,6 @@
 import axios from "axios";
 import { describe, expect, it, vi } from "vitest";
-import { emptySearchResult, getGeniusLyrics, interpretQuery, isSpotifyConfigured, rankMusicTracks, searchMusic, searchSpotify } from "./music";
+import { emptySearchResult, getGeniusLyrics, interpretQuery, isSpotifyConfigured, matchesAudioCandidate, matchesAudioQuery, rankMusicTracks, searchMusic, searchSpotify } from "./music";
 
 describe("music integrations", () => {
   it("interprets natural artist and album queries", () => {
@@ -21,8 +21,34 @@ describe("music integrations", () => {
     expect(emptySearchResult()).toMatchObject({ configured: true, source: "musicbrainz", items: [], total: 0, nextOffset: null });
   });
 
+  it("matches fallback audio by artist, title and duration", () => {
+    const primary = { id: "primary", source: "musicbrainz" as const, kind: "track" as const, name: "Hips Don't Lie", artist: "Shakira", album: "Laundry Service", releaseDate: "2001", releaseYear: "2001", durationMs: 218000, durationLabel: "3:38", popularity: 0, imageUrl: null, spotifyUrl: "https://musicbrainz.org", previewUrl: null, availableMarkets: [] };
+    const fallback = { ...primary, id: "fallback", source: "audius" as const, spotifyUrl: "https://audius.co/shakira/hips-dont-lie", previewUrl: "https://api.audius.co/v1/tracks/fallback/stream" };
+    const wrong = { ...fallback, name: "Completely Different Song", durationMs: 90000 };
+    const falsePositive = { ...fallback, artist: "DJ Real", name: "Shakira Mega Mix" };
+    expect(matchesAudioCandidate(primary, fallback, "Shakira")).toBe(true);
+    expect(matchesAudioCandidate(primary, wrong, "Shakira")).toBe(false);
+    expect(matchesAudioCandidate(primary, falsePositive, "Shakira")).toBe(false);
+  });
+
+  it("matches fallback audio by query words", () => {
+    const track = { id: "audius-1", source: "audius" as const, kind: "track" as const, name: "Daft Punk One More Time Remix", artist: "Open Artist", album: "Audius", releaseDate: "2024", releaseYear: "2024", durationMs: 120000, durationLabel: "2:00", popularity: 0, imageUrl: null, spotifyUrl: "https://audius.co/open-artist/open-signal", previewUrl: "https://api.audius.co/v1/tracks/audius-1/stream", availableMarkets: [] };
+    expect(matchesAudioQuery(track, "Daft Punk")).toBe(true);
+    expect(matchesAudioQuery(track, "Shakira")).toBe(false);
+  });
+
+  it("uses Audius when the primary catalog has no playable preview", async () => {
+    const request = vi.spyOn(axios, "get");
+    request.mockResolvedValueOnce({ data: { artists: [{ id: "artist-1", name: "Shakira" }] } });
+    request.mockResolvedValueOnce({ data: { "release-groups": [], "release-group-count": 0 } });
+    request.mockResolvedValueOnce({ data: { recordings: [{ id: "recording-1", title: "Hips Don't Lie", length: 218000, "artist-credit": [{ name: "Shakira" }], releases: [] }], count: 1 } });
+    request.mockResolvedValueOnce({ data: { data: [{ id: "audius-1", title: "Hips Don't Lie", duration: 218, release_date: "2024-01-01T00:00:00Z", user: { name: "Shakira", handle: "shakira" }, permalink: "open-artist/open-signal", artwork: { "1000x1000": "https://example.com/art.jpg" } }], total: 1 } });
+    await expect(searchMusic("Shakira", 0)).resolves.toMatchObject({ source: "audius", items: [{ id: "audius-1", previewUrl: "https://api.audius.co/v1/tracks/audius-1/stream" }] });
+    request.mockRestore();
+  });
+
   it("falls back safely when MusicBrainz responds with 503", async () => {
-    const request = vi.spyOn(axios, "get").mockRejectedValueOnce(Object.assign(new Error("Service unavailable"), { response: { status: 503 } }));
+    const request = vi.spyOn(axios, "get").mockRejectedValue(Object.assign(new Error("Service unavailable"), { response: { status: 503 } }));
     await expect(searchMusic("Shakira", 0)).resolves.toMatchObject({ items: [], total: 0, nextOffset: null });
     request.mockRestore();
   });

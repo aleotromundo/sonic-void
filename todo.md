@@ -122,4 +122,25 @@
 - [x] Guardar checkpoint posterior a las correcciones finales de LRCLIB y vista de álbum
 - [x] Ajustar el alcance al detalle musical actual; la tracklist queda pendiente de un endpoint real de releases y no se inventan pistas
 - [x] Verificar la integración final y guardar un checkpoint posterior a LRCLIB
-- [ ] Guardar un nuevo checkpoint después de la integración LRCLIB y la verificación visual final
+- [x] Guardar un nuevo checkpoint después de la integración LRCLIB y la verificación visual final
+- [x] Diagnosticar por qué Play no inicia audio en la versión publicada
+- [x] Corregir el flujo de audio para previews autorizadas y errores del navegador
+- [x] Mostrar un estado inequívoco cuando la pista no tiene preview reproducible
+- [x] Agregar pruebas del reproductor y verificar escritorio y móvil
+- [x] Agregar pruebas del Player con Vitest/RTL para preview, sin preview, Play/Pause y error HTMLAudioElement
+- [x] Agregar pruebas del componente Player para reproducción exitosa, pista sin preview y error del HTMLAudioElement
+- [x] Guardar checkpoint posterior a la corrección de Play
+- [x] Guardar un checkpoint real después de la integración Audius y la corrección de Play
+- [x] Endurecer el matching de audio por artista y título, sin aceptar el artista dentro del título
+- [x] Cubrir falsos positivos reales y matching por duración en pruebas
+- [x] Agregar prueba regresiva para artista distinto con término buscado dentro del título
+- [x] Eliminar casts `as LocalQueueItem` compartiendo un tipo común de pista
+- [x] Auditar Audius, Jamendo y otras fuentes legales con audio reproducible
+- [x] Integrar una estrategia de fallback de audio por coincidencia de artista y título
+- [x] Implementar matching real del fallback comparando artista y título por separado contra el resultado primario
+- [x] Agregar pruebas deterministas para falsos positivos y coincidencias correctas entre resultado primario y fallback
+- [x] Mostrar la fuente de audio activa y su enlace oficial
+- [x] Agregar pruebas del componente Player para play exitoso, sin preview y error de reproducción
+- [x] Implementar matching real entre resultados primarios y fallback de audio por artista, título y duración
+- [x] Mostrar en el reproductor la fuente activa de audio y su enlace oficial
+- [x] Actualizar los tipos de persistencia local para soportar Audius sin casts inseguros
