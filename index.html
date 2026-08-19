@@ -603,6 +603,27 @@
             searchInput.focus();
         }
 
+        // Pool de búsquedas para que la pantalla de Inicio no muestre siempre lo mismo
+        const HOME_QUERIES = [
+            'rock classics', 'pop hits', 'indie rock', 'hip hop hits', 'electronic music mix',
+            'jazz classics', 'latin hits', 'reggae essentials', 'metal classics', '80s hits',
+            '90s hits', 'acoustic covers', 'funk soul classics', 'k-pop hits', 'lofi beats'
+        ];
+
+        function pickHomeQuery() {
+            return HOME_QUERIES[Math.floor(Math.random() * HOME_QUERIES.length)];
+        }
+
+        // Mezcla liviana (Fisher-Yates) para que el orden tampoco sea siempre idéntico
+        function shuffleArray(arr) {
+            const a = arr.slice();
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+
         // Convierte los items crudos de la YouTube Data API (video/playlist/channel) a nuestro formato interno
         function mapYouTubeItems(items) {
             return items
@@ -624,6 +645,26 @@
                 });
         }
 
+        // Helper único para pedir un tipo de recurso de YouTube (video/playlist/channel),
+        // ya sea vía API key directa o vía el backend proxy. Devuelve siempre un array mapeado.
+        async function fetchYouTubeSearch(query, resourceTypes, opts = {}) {
+            const channelParam = opts.channelId ? `&channelId=${encodeURIComponent(opts.channelId)}` : '';
+            const maxResults = opts.maxResults || 20;
+            try {
+                if (YOUTUBE_API_KEY) {
+                    const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=${resourceTypes}&maxResults=${maxResults}&q=${encodeURIComponent(query)}${channelParam}&key=${YOUTUBE_API_KEY}`;
+                    const response = await fetch(url);
+                    const data = await response.json();
+                    return data.items && data.items.length ? mapYouTubeItems(data.items) : [];
+                } else {
+                    const response = await fetch(`/api/search?query=${encodeURIComponent(query)}&type=youtube&resourceTypes=${resourceTypes}${channelParam}`);
+                    if (!response.ok) return [];
+                    const data = await response.json();
+                    return data.items && data.items.length ? mapYouTubeItems(data.items) : [];
+                }
+            } catch (e) { return []; }
+        }
+
         async function performSmartSearch(query) {
             searchQuery = query;
             currentMood = null;
@@ -635,25 +676,29 @@
             container.innerHTML = '';
 
             try {
-                if (YOUTUBE_API_KEY) {
-                    await searchYouTube(query);
+                let merged = [];
+                if (channelFilter) {
+                    // Ya estamos dentro de un canal: un solo pedido de video+playlist alcanza
+                    merged = await fetchYouTubeSearch(query, 'video,playlist', { channelId: channelFilter.id, maxResults: 20 });
                 } else {
-                    try {
-                        const channelParam = channelFilter ? `&channelId=${encodeURIComponent(channelFilter.id)}` : '';
-                        const resourceTypes = channelFilter ? 'video,playlist' : 'video,playlist,channel';
-                        const response = await fetch(`/api/search?query=${encodeURIComponent(query)}&type=youtube&resourceTypes=${resourceTypes}${channelParam}`);
-                        if (response.ok) {
-                            const data = await response.json();
-                            if (data.items && data.items.length > 0) {
-                                const mappedResults = mapYouTubeItems(data.items);
-                                renderYouTubeSearchResults(mappedResults, query);
-                                loader.style.display = 'none';
-                                return;
-                            }
-                        }
-                    } catch (e) { console.warn("Backend no disponible...", e); }
-                    if (!channelFilter) await searchOpenverse(query);
-                    else { renderEmptyState(`Sin resultados para "${query}" en este canal`); }
+                    // Pedidos en PARALELO y separados por tipo. Esto es clave cuando buscás un
+                    // artista: si pedimos todo junto, YouTube suele devolver casi todo "video" y
+                    // los álbumes/canales quedan afuera del top 20. Pidiendo cada tipo aparte nos
+                    // aseguramos que la separación en subgrupos tenga contenido real en los tres.
+                    const [videos, albums, channels] = await Promise.all([
+                        fetchYouTubeSearch(query, 'video', { maxResults: 14 }),
+                        fetchYouTubeSearch(`${query} álbum completo`, 'playlist', { maxResults: 8 }),
+                        fetchYouTubeSearch(query, 'channel', { maxResults: 6 })
+                    ]);
+                    merged = [...channels, ...albums, ...shuffleArray(videos)];
+                }
+
+                if (merged.length > 0) {
+                    renderYouTubeSearchResults(merged, query);
+                } else if (!channelFilter) {
+                    await searchOpenverse(query);
+                } else {
+                    renderEmptyState(`Sin resultados para "${query}" en este canal`);
                 }
             } catch (e) {
                 console.warn("YouTube falló, probando Openverse...", e);
@@ -665,18 +710,6 @@
             } finally {
                 if (loader.style.display === 'flex') loader.style.display = 'none';
             }
-        }
-
-        async function searchYouTube(query) {
-            const channelParam = channelFilter ? `&channelId=${encodeURIComponent(channelFilter.id)}` : '';
-            const typeParam = channelFilter ? 'video,playlist' : 'video,playlist,channel';
-            const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=${typeParam}&maxResults=20&q=${encodeURIComponent(query)}${channelParam}&key=${YOUTUBE_API_KEY}`;
-            const response = await fetch(url);
-            const data = await response.json();
-            if (data.items && data.items.length > 0) {
-                const mappedResults = mapYouTubeItems(data.items);
-                renderYouTubeSearchResults(mappedResults, query);
-            } else { throw new Error("No results"); }
         }
 
         // Entrar a ver el contenido (álbumes/canciones) de un canal específico
@@ -752,7 +785,7 @@
             document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.nav-links li').forEach(l => l.classList.remove('active'));
             document.querySelector('.nav-links li:first-child').classList.add('active');
-            performSmartSearch("rock classics");
+            performSmartSearch(pickHomeQuery());
         }
 
         function showSection(section) {
