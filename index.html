@@ -130,7 +130,6 @@
 
         #yt-player-container { display: none; }
         .loader { text-align: center; color: var(--text-gray); padding: 20px; display: none; }
-        .status-msg { position: fixed; top: 20px; right: 20px; background: rgba(0,0,0,0.8); padding: 10px 20px; border-radius: 20px; font-size: 0.8rem; z-index: 200; display: none; border: 1px solid #333; }
     </style>
 </head>
 <body>
@@ -138,18 +137,17 @@
     <div class="main-container">
         <!-- SIDEBAR -->
         <div class="sidebar">
-            <div class="logo"><i class="fab fa-spotify"></i> Nowarfy</div>
+            <div class="logo"><i class="fab fa-spotify"></i> Nowarfy <span style="font-size:0.5em; color:#666;">UNLIMITED</span></div>
             <ul class="nav-links">
                 <li onclick="resetView()" class="active"><i class="fas fa-home"></i> Inicio</li>
                 <li onclick="showSection('favorites')"><i class="fas fa-heart"></i> Favoritos <span id="favCount" style="margin-left:auto; font-size:0.8em;">0</span></li>
-                <li onclick="toggleShuffle()"><i class="fas fa-random" id="shuffleIcon" style="color:#777; margin-left:auto;"></i> Aleatorio</li>
             </ul>
         </div>
 
         <!-- CONTENIDO -->
         <div class="content-area">
             <div class="search-container">
-                <input type="text" class="search-input" id="searchInput" placeholder="¿Qué quieres escuchar? (Busca en YouTube)" onkeyup="handleSearchDebounced()">
+                <input type="text" class="search-input" id="searchInput" placeholder="Busca cualquier cosa: Nirvana, Tool, Rock, Piano..." onkeyup="handleSearchDebounced()">
             </div>
 
             <!-- Selector de Ánimo -->
@@ -197,29 +195,29 @@
 
     <div id="yt-player-container"></div>
     <audio id="audio-element"></audio>
-    <div id="statusMsg" class="status-msg"></div>
 
     <script>
-        // --- CONFIGURACIÓN DE VARIABLES DE ENTORNO (VERCEL) ---
-        // Estas variables se inyectan automáticamente si están configuradas en Vercel
-        const YOUTUBE_API_KEY = '{{YOUTUBE_API_KEY}}'; 
-        const OPENVERSE_CLIENT_ID = '{{OPENVERSE_CLIENT_ID}}';
-        const OPENVERSE_CLIENT_SECRET = '{{OPENVERSE_CLIENT_SECRET}}';
+        // --- CONFIGURACIÓN CLAVE ---
+        // ⚠️ IMPORTANTE: Para producción real, estas variables deberían leerse de un backend o API Route.
+        // Como es un frontend estático, puedes poner tus claves aquí TEMPORALMENTE para probar, 
+        // pero lo ideal es usar la carpeta /api/search.js que creamos antes.
+        // Si dejaste esto vacío, funcionará en modo "Demo" con música libre limitada.
+        
+        const YOUTUBE_API_KEY = ''; // Pega aquí tu clave de YouTube si quieres buscar TODO
+        const OPENVERSE_CLIENT_ID = ''; // Pega aquí tu ID de Openverse
+        const OPENVERSE_CLIENT_SECRET = ''; // Pega aquí tu Secret de Openverse
 
-        let openverseToken = null;
-        let tokenExpiry = 0;
-
-        // Estado Global
         let currentList = [];
         let favorites = JSON.parse(localStorage.getItem('nowarfy_favs')) || [];
         let currentIndex = -1;
         let isPlaying = false;
         let searchQuery = "";
         let currentMood = null;
-        let shuffleMode = false;
         let searchTimeout = null;
         let ytPlayer = null;
         let progressInterval = null;
+        let openverseToken = null;
+        let tokenExpiry = 0;
         
         const audioEl = document.getElementById('audio-element');
 
@@ -228,8 +226,7 @@
 
         // --- AUTENTICACIÓN OPENVERSE ---
         async function getOpenverseToken() {
-            if (!OPENVERSE_CLIENT_ID || !OPENVERSE_CLIENT_SECRET || OPENVERSE_CLIENT_ID === '{{OPENVERSE_CLIENT_ID}}') return null;
-
+            if (!OPENVERSE_CLIENT_ID || !OPENVERSE_CLIENT_SECRET) return null;
             const now = Date.now();
             if (openverseToken && now < tokenExpiry) return openverseToken;
 
@@ -273,12 +270,11 @@
             container.innerHTML = '';
 
             try {
-                // 1. Intentar buscar en YouTube si hay clave válida
-                if (YOUTUBE_API_KEY && YOUTUBE_API_KEY !== '{{YOUTUBE_API_KEY}}') {
+                // 1. Intentar buscar en YouTube si hay clave
+                if (YOUTUBE_API_KEY) {
                     await searchYouTube(query);
                 } else {
-                    showStatus("⚠️ Modo Demo: Sin clave de YouTube. Buscando en Openverse...");
-                    // Fallback si no hay clave: Buscar en Openverse (Música Libre)
+                    // Fallback: Buscar en Openverse (Música Libre)
                     await searchOpenverse(query);
                 }
             } catch (e) {
@@ -294,16 +290,12 @@
             const response = await fetch(url);
             const data = await response.json();
 
-            if (data.error) {
-                throw new Error(data.error.message);
-            }
-
             if (data.items && data.items.length > 0) {
                 const mappedResults = data.items.map(item => ({
                     title: item.snippet.title,
                     artist: item.snippet.channelTitle,
                     img: item.snippet.thumbnails.medium.url,
-                    url: item.id.videoId, // Solo el ID del video
+                    url: item.id.videoId, 
                     type: 'yt',
                     genre: 'unknown',
                     mood: 'unknown'
@@ -311,25 +303,16 @@
                 currentList = mappedResults;
                 renderGrid(mappedResults, `Resultados de YouTube: "${query}"`, "<i class='fab fa-youtube'></i>");
             } else {
-                document.getElementById('dynamicSections').innerHTML = '<p style="padding:20px; color:#aaa;">No se encontraron videos en YouTube.</p>';
+                container.innerHTML = '<p style="padding:20px; color:#aaa;">No se encontraron videos en YouTube.</p>';
             }
         }
 
         async function searchOpenverse(query) {
             const token = await getOpenverseToken();
             const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+            const url = `https://api.openverse.org/v1/audio/?q=${encodeURIComponent(query)}&page_size=20`;
             
-            // Mapeo simple de ánimo a tags de Openverse
-            let tagFilter = "";
-            if(currentMood) {
-                const moodMap = { 'energy': 'energetic', 'relax': 'peaceful', 'party': 'happy', 'sad': 'emotional', 'focus': 'instrumental' };
-                tagFilter = `&tags=${moodMap[currentMood]}`;
-            }
-
-            const url = `https://api.openverse.org/v1/audio/?q=${encodeURIComponent(query)}&page_size=20&filter_dead=true${tagFilter}`;
             const response = await fetch(url, { headers });
-            
-            if (!response.ok) throw new Error('Openverse Search failed');
             const data = await response.json();
 
             if (data.results && data.results.length > 0) {
@@ -339,14 +322,13 @@
                     img: track.thumbnail || 'https://via.placeholder.com/300x180?text=Music',
                     url: track.url,
                     type: 'mp3',
-                    // CORRECCIÓN DE SEGURIDAD PARA GENRES
-                    genre: (track.genres && track.genres.length > 0) ? track.genres[0] : 'unknown',
+                    genre: track.genres[0] || 'unknown',
                     mood: 'unknown'
                 }));
                 currentList = mappedResults;
                 renderGrid(mappedResults, `Resultados Libres (Openverse): "${query}"`, "<i class='fas fa-globe'></i>");
             } else {
-                document.getElementById('dynamicSections').innerHTML = '<p style="padding:20px; color:#aaa;">Sin resultados libres. ¡Configura la API Key de YouTube para buscar todo!</p>';
+                container.innerHTML = '<p style="padding:20px; color:#aaa;">Sin resultados libres. ¡Agrega una API Key de YouTube para buscar todo!</p>';
             }
         }
 
@@ -356,7 +338,6 @@
             document.getElementById('searchInput').value = "";
             document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active'));
             event.currentTarget.classList.add('active');
-            // Para modos, usamos búsqueda local o openverse simple
             performSmartSearch(mood); 
         }
 
@@ -367,7 +348,7 @@
             document.querySelectorAll('.nav-links li').forEach(l => l.classList.remove('active'));
             document.querySelector('.nav-links li:first-child').classList.add('active');
             // Cargar ejemplos iniciales
-            if(YOUTUBE_API_KEY && YOUTUBE_API_KEY !== '{{YOUTUBE_API_KEY}}') {
+            if(YOUTUBE_API_KEY) {
                 performSmartSearch("rock classics");
             } else {
                 performSmartSearch("electronic");
@@ -466,7 +447,6 @@
         }
 
         function nextSong(manual = false) {
-            if(manual && shuffleMode) { play(Math.floor(Math.random() * currentList.length)); return; }
             let next = currentIndex + 1;
             if(next >= currentList.length) next = 0;
             play(next);
@@ -516,19 +496,6 @@
         function updateFavButton(song) {
             const exists = favorites.some(f => f.title === song.title && f.artist === song.artist);
             document.getElementById('favBtn').className = exists ? "fas fa-heart fav-btn active" : "far fa-heart fav-btn";
-        }
-
-        function toggleShuffle() {
-            shuffleMode = !shuffleMode;
-            const icon = document.getElementById('shuffleIcon');
-            icon.style.color = shuffleMode ? 'var(--spotify-green)' : '#777';
-        }
-
-        function showStatus(msg) {
-            const el = document.getElementById('statusMsg');
-            el.innerText = msg;
-            el.style.display = 'block';
-            setTimeout(() => el.style.display = 'none', 4000);
         }
     </script>
 </body>
