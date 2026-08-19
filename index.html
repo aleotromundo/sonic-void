@@ -802,12 +802,51 @@
                     const response = await fetch(url);
                     const data = await response.json();
                     return data.items && data.items.length ? mapYouTubeItems(data.items) : [];
-                } else {
-                    const response = await fetch(`/api/search?query=${encodeURIComponent(query)}&type=youtube&resourceTypes=${resourceTypes}${channelParam}`);
-                    if (!response.ok) return [];
-                    const data = await response.json();
-                    return data.items && data.items.length ? mapYouTubeItems(data.items) : [];
                 }
+                // Backend propio: probamos primero el formato "rico" (separado por tipo, con filtro de canal).
+                const response = await fetch(`/api/search?query=${encodeURIComponent(query)}&type=youtube&resourceTypes=${resourceTypes}${channelParam}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.items && data.items.length) return mapYouTubeItems(data.items);
+                }
+                // Si no hubo resultados (backend que no reconoce resourceTypes/channelId), reintentamos
+                // con el formato simple y comprobado: solo query + type=youtube, todo tipo "video".
+                if (resourceTypes.includes('video') && !opts.channelId) {
+                    return await fetchYouTubeLegacy(query, maxResults);
+                }
+                return [];
+            } catch (e) {
+                if (resourceTypes.includes('video') && !opts.channelId) {
+                    try { return await fetchYouTubeLegacy(query, maxResults); } catch (e2) { return []; }
+                }
+                return [];
+            }
+        }
+
+        // Formato "clásico" de pedido al backend (el que funcionaba antes): sin resourceTypes ni channelId.
+        async function fetchYouTubeLegacy(query, maxResults = 20) {
+            try {
+                const response = await fetch(`/api/search?query=${encodeURIComponent(query)}&type=youtube`);
+                if (!response.ok) return [];
+                const data = await response.json();
+                if (!data.items || !data.items.length) return [];
+                return data.items
+                    .filter(item => item && item.id && item.id.videoId && item.snippet)
+                    .slice(0, maxResults)
+                    .map(item => {
+                        const thumb = item.snippet.thumbnails && (item.snippet.thumbnails.medium || item.snippet.thumbnails.default || item.snippet.thumbnails.high);
+                        return {
+                            title: item.snippet.title,
+                            artist: item.snippet.channelTitle,
+                            img: thumb ? thumb.url : '',
+                            url: item.id.videoId,
+                            type: 'yt',
+                            resourceKind: 'youtube#video',
+                            isPlaylist: false,
+                            channelId: item.snippet.channelId,
+                            channelTitle: item.snippet.channelTitle
+                        };
+                    });
             } catch (e) { return []; }
         }
 
