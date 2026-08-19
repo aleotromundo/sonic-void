@@ -155,7 +155,7 @@
             right: 20px !important;
             bottom: auto !important;
             left: auto !important;
-            width: 320px !important; /* Un poco más ancho para que quepa la barra */
+            width: 320px !important;
             height: 70px !important;
             z-index: 9999 !important;
             border-radius: 12px !important;
@@ -163,12 +163,11 @@
             border: 1px solid #333 !important;
             background: rgba(0, 0, 0, 0.95) !important;
             padding: 10px 15px !important;
-            cursor: move; /* Indica que se puede arrastrar */
-            flex-direction: column !important; /* Apilar elementos verticalmente */
+            cursor: move;
+            flex-direction: column !important;
             justify-content: center !important;
         }
 
-        /* Ajustes específicos para elementos dentro del modo flotante */
         .player-bar.floating .player-left { 
             width: 100% !important; 
             min-width: auto !important; 
@@ -178,8 +177,8 @@
         .player-bar.floating .player-img { width: 35px !important; height: 35px !important; margin-right: 10px !important; }
         .player-bar.floating .track-info { flex: 1; overflow: hidden; }
         .player-bar.floating .track-name { font-size: 0.8rem !important; }
-        .player-bar.floating .artist-name { font-size: 0.7rem !important; display: block !important; } /* Mostrar artista en flotante */
-        .player-bar.floating .fav-btn { display: none !important; } /* Ocultar favorito para ahorrar espacio */
+        .player-bar.floating .artist-name { font-size: 0.7rem !important; display: block !important; }
+        .player-bar.floating .fav-btn { display: none !important; }
 
         .player-bar.floating .player-center { 
             width: 100% !important; 
@@ -200,10 +199,10 @@
             gap: 5px !important;
             font-size: 0.65rem !important;
         }
-        .player-bar.floating .progress-bar span { display: block !important; } /* Mostrar tiempos */
+        .player-bar.floating .progress-bar span { display: block !important; }
 
         .player-bar.floating .player-utils { 
-            display: none !important; /* Ocultar utilidades extra en flotante */
+            display: none !important;
         }
 
         #pipBtn.active { color: var(--spotify-green); opacity: 1 !important; }
@@ -502,14 +501,17 @@
         }
 
         function initYTPlayer(videoId) {
-            document.getElementById('yt-player-container').innerHTML = '<div id="yt-player"></div>';
+            const container = document.getElementById('yt-player-container');
+            container.innerHTML = '<div id="yt-player"></div>';
+            
             ytPlayer = new YT.Player('yt-player', {
                 height: '0', width: '0', videoId: videoId,
-                playerVars: { 'autoplay': 1, 'controls': 0, 'enablejsapi': 1, 'origin': window.location.origin },
-                events: { 'onReady': onYTReady, 'onStateChange': onYTStateChange }
+                playerVars: { 'autoplay': 1, 'controls': 0, 'enablejsapi': 1, 'origin': window.location.origin, 'rel': 0 },
+                events: { 'onReady': onYTReady, 'onStateChange': onYTStateChange, 'onError': onYTPError }
             });
         }
 
+        function onYTPError(event) { console.error("Error en YouTube Player:", event.data); }
         function onYTReady() { isPlaying = true; updateIcon(); startProgress(ytPlayer); }
         function onYTStateChange(event) {
             if (event.data === YT.PlayerState.PLAYING) { isPlaying = true; if(!progressInterval) startProgress(ytPlayer); }
@@ -519,14 +521,23 @@
         }
 
         function togglePlay() {
-            if(currentIndex === -1) return;
+            if (currentIndex === -1) return;
             const song = currentList[currentIndex];
+            
             if (song.type === 'yt') {
-                if(ytPlayer) { if(isPlaying) ytPlayer.pauseVideo(); else ytPlayer.playVideo(); isPlaying = !isPlaying; }
+                if (ytPlayer && typeof ytPlayer.playVideo === 'function') {
+                    if (isPlaying) { ytPlayer.pauseVideo(); isPlaying = false; } 
+                    else { ytPlayer.playVideo(); isPlaying = true; }
+                    updateIcon();
+                } else {
+                    console.warn("YouTube Player no está listo aún.");
+                    setTimeout(() => { if(ytPlayer && typeof ytPlayer.playVideo === 'function') togglePlay(); }, 200);
+                }
             } else {
-                if(isPlaying) audioEl.pause(); else audioEl.play(); isPlaying = !isPlaying;
+                if (isPlaying) { audioEl.pause(); isPlaying = false; } 
+                else { audioEl.play(); isPlaying = true; }
+                updateIcon();
             }
-            updateIcon();
         }
 
         function nextSong(manual = false) { if(manual && shuffleMode) { play(Math.floor(Math.random() * currentList.length)); return; } let next = currentIndex + 1; if(next >= currentList.length) next = 0; play(next); }
@@ -562,8 +573,6 @@
             const rect = bar.getBoundingClientRect();
             const clickX = e.clientX - rect.left;
             const width = rect.width;
-            // Restamos el ancho de los textos de tiempo si es necesario, pero flex lo maneja bien
-            // Calculamos porcentaje
             const percentage = clickX / width;
             
             const song = currentList[currentIndex];
@@ -589,45 +598,33 @@
             isFloating = !isFloating;
             
             if (isFloating) {
-                // ACTIVAR MODO FLOTANTE
                 playerBar.classList.add('floating');
                 pipBtn.classList.add('active');
                 pipBtn.classList.remove('fa-compress-arrows-alt');
-                pipBtn.classList.add('fa-expand-arrows-alt'); // Icono de "volver"
-                
-                // Iniciar arrastre
+                pipBtn.classList.add('fa-expand-arrows-alt');
                 makeDraggable(playerBar);
             } else {
-                // VOLVER A POSICIÓN ORIGINAL
                 playerBar.classList.remove('floating');
                 pipBtn.classList.remove('active');
                 pipBtn.classList.remove('fa-expand-arrows-alt');
                 pipBtn.classList.add('fa-compress-arrows-alt');
-                
-                // Detener arrastre
                 playerBar.onmousedown = null;
                 playerBar.style.top = '';
                 playerBar.style.left = '';
-                playerBar.style.right = ''; // Resetear right también
+                playerBar.style.right = '';
             }
         }
 
         function makeDraggable(element) {
             let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-            
-            // Permitir arrastre desde cualquier parte del reproductor
             element.onmousedown = dragMouseDown;
 
             function dragMouseDown(e) {
                 e = e || window.event;
                 e.preventDefault();
-                // Obtener posición inicial del mouse
                 pos3 = e.clientX;
                 pos4 = e.clientY;
-                
-                // Si estamos en modo flotante, quitamos right:0 para permitir movimiento libre a la izquierda
                 element.style.right = 'auto'; 
-                
                 document.onmouseup = closeDragElement;
                 document.onmousemove = elementDrag;
             }
@@ -635,18 +632,15 @@
             function elementDrag(e) {
                 e = e || window.event;
                 e.preventDefault();
-                // Calcular nueva posición
                 pos1 = pos3 - e.clientX;
                 pos2 = pos4 - e.clientY;
                 pos3 = e.clientX;
                 pos4 = e.clientY;
-                // Establecer nueva posición
                 element.style.top = (element.offsetTop - pos2) + "px";
                 element.style.left = (element.offsetLeft - pos1) + "px";
             }
 
             function closeDragElement() {
-                // Detener movimiento al soltar el mouse
                 document.onmouseup = null;
                 document.onmousemove = null;
             }
