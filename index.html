@@ -556,7 +556,6 @@
                 <button class="mood-btn mood-relax" onclick="setMood('relax')"><i class="fas fa-spa"></i> Relax</button>
                 <button class="mood-btn mood-party" onclick="setMood('party')"><i class="fas fa-champagne-glasses"></i> Fiesta</button>
                 <button class="mood-btn mood-sad" onclick="setMood('sad')"><i class="fas fa-cloud-rain"></i> Melancolía</button>
-                <button class="mood-btn mood-focus" onclick="setMood('focus')"><i class="fas fa-bullseye"></i> Enfoque</button>
             </div>
 
             <div id="loader" class="loader-wrap">
@@ -668,6 +667,9 @@
         let progressInterval = null;
         let openverseToken = null;
         let tokenExpiry = 0;
+        // Evita insistir contra YouTube durante la misma sesión cuando informa que la cuota se agotó.
+        let youtubeQuotaBlockedUntil = 0;
+        let youtubeQuotaNoticeShown = false;
         let shuffleMode = false;
         let isSeeking = false;
         let lastVolume = 0.8;
@@ -791,34 +793,38 @@
                 });
         }
 
-        // Helper único para pedir un tipo de recurso de YouTube (video/playlist/channel),
-        // ya sea vía API key directa o vía el backend proxy. Devuelve siempre un array mapeado.
+        // Obtiene resultados de YouTube una sola vez por petición. El proxy aplica caché compartida
+        // y comunica los errores de cuota con un estado HTTP real, para no repetir solicitudes inútiles.
+        function markYouTubeQuotaUnavailable() {
+            // La página no vuelve a consultar YouTube durante una hora tras detectar el límite.
+            youtubeQuotaBlockedUntil = Date.now() + (60 * 60 * 1000);
+            if (!youtubeQuotaNoticeShown) {
+                youtubeQuotaNoticeShown = true;
+                showToast('YouTube alcanzó su cuota temporalmente; mostramos resultados Libres', 'fa-circle-info');
+            }
+        }
+
         async function fetchYouTubeSearch(query, resourceTypes, opts = {}) {
+            if (Date.now() < youtubeQuotaBlockedUntil) return [];
+
             const channelParam = opts.channelId ? `&channelId=${encodeURIComponent(opts.channelId)}` : '';
             const maxResults = opts.maxResults || 20;
             try {
+                let response;
                 if (YOUTUBE_API_KEY) {
                     const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=${resourceTypes}&maxResults=${maxResults}&q=${encodeURIComponent(query)}${channelParam}&key=${YOUTUBE_API_KEY}`;
-                    const response = await fetch(url);
-                    const data = await response.json();
-                    return data.items && data.items.length ? mapYouTubeItems(data.items) : [];
+                    response = await fetch(url);
+                } else {
+                    response = await fetch(`/api/search?query=${encodeURIComponent(query)}&type=youtube&resourceTypes=${resourceTypes}${channelParam}&maxResults=${maxResults}`);
                 }
-                // Backend propio: probamos primero el formato "rico" (separado por tipo, con filtro de canal).
-                const response = await fetch(`/api/search?query=${encodeURIComponent(query)}&type=youtube&resourceTypes=${resourceTypes}${channelParam}`);
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.items && data.items.length) return mapYouTubeItems(data.items);
+
+                const data = await response.json();
+                if (!response.ok) {
+                    if (response.status === 429 || data?.error?.reason === 'RATE_LIMIT_EXCEEDED') markYouTubeQuotaUnavailable();
+                    return [];
                 }
-                // Si no hubo resultados (backend que no reconoce resourceTypes/channelId), reintentamos
-                // con el formato simple y comprobado: solo query + type=youtube, todo tipo "video".
-                if (resourceTypes.includes('video') && !opts.channelId) {
-                    return await fetchYouTubeLegacy(query, maxResults);
-                }
-                return [];
+                return data.items && data.items.length ? mapYouTubeItems(data.items) : [];
             } catch (e) {
-                if (resourceTypes.includes('video') && !opts.channelId) {
-                    try { return await fetchYouTubeLegacy(query, maxResults); } catch (e2) { return []; }
-                }
                 return [];
             }
         }
@@ -861,22 +867,11 @@
             container.innerHTML = '';
 
             try {
-                let merged = [];
-                if (channelFilter) {
-                    // Ya estamos dentro de un canal: un solo pedido de video+playlist alcanza
-                    merged = await fetchYouTubeSearch(query, 'video,playlist', { channelId: channelFilter.id, maxResults: 20 });
-                } else {
-                    // Pedidos en PARALELO y separados por tipo. Esto es clave cuando buscás un
-                    // artista: si pedimos todo junto, YouTube suele devolver casi todo "video" y
-                    // los álbumes/canales quedan afuera del top 20. Pidiendo cada tipo aparte nos
-                    // aseguramos que la separación en subgrupos tenga contenido real en los tres.
-                    const [videos, albums, channels] = await Promise.all([
-                        fetchYouTubeSearch(query, 'video', { maxResults: 14 }),
-                        fetchYouTubeSearch(`${query} álbum completo`, 'playlist', { maxResults: 8 }),
-                        fetchYouTubeSearch(query, 'channel', { maxResults: 6 })
-                    ]);
-                    merged = [...channels, ...albums, ...shuffleArray(videos)];
-                }
+                // Una búsqueda de video por consulta: evita triplicar el consumo de cuota.
+                // Los resultados siguen llegando desde YouTube y se reproducen igual que antes.
+                const merged = channelFilter
+                    ? await fetchYouTubeSearch(query, 'video', { channelId: channelFilter.id, maxResults: 20 })
+                    : await fetchYouTubeSearch(query, 'video', { maxResults: 20 });
 
                 if (merged.length > 0) {
                     renderYouTubeSearchResults(merged, query);
@@ -964,8 +959,7 @@
             performSmartSearch(mood);
         }
 
-        // Arma la pantalla de Inicio con varias filas de música al mismo tiempo (canciones de
-        // distintos géneros + una fila de álbumes), para que nunca se vea vacía o con una sola búsqueda.
+        // Inicio no dispara búsquedas automáticas: cada recarga antes consumía seis consultas de YouTube.
         async function resetView() {
             searchQuery = ""; currentMood = null; channelFilter = null;
             searchInput.value = ""; searchClearBtn.classList.remove('show');
@@ -973,57 +967,9 @@
             document.querySelectorAll('.nav-links li').forEach(l => l.classList.remove('active'));
             document.querySelector('.nav-links li:first-child').classList.add('active');
 
-            const loader = document.getElementById('loader');
-            const container = document.getElementById('dynamicSections');
-            loader.style.display = 'flex';
-            container.innerHTML = '';
-
-            const shuffledSections = shuffleArray(HOME_SECTIONS);
-            const songSections = shuffledSections.slice(0, 5);
-            const albumSection = shuffledSections[5] || shuffledSections[0];
-
-            try {
-                const [songResults, albumResults] = await Promise.all([
-                    Promise.all(songSections.map(s => fetchYouTubeSearch(s.query, 'video', { maxResults: 10 }))),
-                    fetchYouTubeSearch(`${albumSection.query} álbum completo`, 'playlist', { maxResults: 8 })
-                ]);
-
-                currentList = [];
-                container.innerHTML = '';
-                let anyContent = false;
-
-                songSections.forEach((section, i) => {
-                    const songs = shuffleArray(songResults[i]);
-                    if (!songs.length) return;
-                    anyContent = true;
-                    const indexed = songs.map(song => {
-                        const item = { ...song, sourceIndex: currentList.length };
-                        currentList.push(item);
-                        return item;
-                    });
-                    renderGrid(indexed, section.label, "<i class='fas fa-music'></i>");
-                });
-
-                if (albumResults.length) {
-                    anyContent = true;
-                    const indexedAlbums = albumResults.map(album => {
-                        const item = { ...album, sourceIndex: currentList.length };
-                        currentList.push(item);
-                        return item;
-                    });
-                    renderGrid(indexedAlbums, `Álbumes: ${albumSection.label}`, "<i class='fas fa-compact-disc'></i>");
-                }
-
-                if (!anyContent) {
-                    await searchOpenverse(songSections[0] ? songSections[0].query : 'music');
-                }
-            } catch (e) {
-                console.warn("No se pudo cargar Inicio, probando Openverse...", e);
-                try { await searchOpenverse('music'); }
-                catch (e2) { renderEmptyState('No pudimos cargar Inicio', 'Probá recargar la página.'); }
-            } finally {
-                loader.style.display = 'none';
-            }
+            currentList = [];
+            document.getElementById('loader').style.display = 'none';
+            renderEmptyState('Buscá una canción, artista o álbum', 'YouTube se consulta únicamente cuando elegís qué querés escuchar.');
         }
 
         function showSection(section) {
