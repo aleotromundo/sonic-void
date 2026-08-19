@@ -578,23 +578,16 @@
                     await searchYouTube(query);
                 } else {
                     try {
-                        const response = await fetch(`/api/search?query=${encodeURIComponent(query)}&type=youtube&resourceTypes=video,playlist`);
+                        const response = await fetch(`/api/search?query=${encodeURIComponent(query)}&type=youtube`);
                         if (response.ok) {
                             const data = await response.json();
                             if (data.items && data.items.length > 0) {
-                                const mappedResults = data.items
-                                    .filter(item => item.id && (item.id.kind === 'youtube#video' || item.id.kind === 'youtube#playlist'))
-                                    .map(item => ({
-                                        title: item.snippet.title,
-                                        artist: item.snippet.channelTitle,
-                                        img: item.snippet.thumbnails.medium.url,
-                                        url: item.id.videoId || item.id.playlistId,
-                                        type: 'yt',
-                                        resourceKind: item.id.kind,
-                                        isPlaylist: item.id.kind === 'youtube#playlist'
-                                    }));
+                                const mappedResults = data.items.map(item => ({
+                                    title: item.snippet.title, artist: item.snippet.channelTitle,
+                                    img: item.snippet.thumbnails.medium.url, url: item.id.videoId, type: 'yt'
+                                }));
                                 currentList = mappedResults;
-                                renderYouTubeSearchResults(mappedResults, query);
+                                renderGrid(mappedResults, `Resultados de YouTube: "${query}"`, "<i class='fab fa-youtube'></i>");
                                 loader.style.display = 'none';
                                 return;
                             }
@@ -612,23 +605,16 @@
         }
 
         async function searchYouTube(query) {
-            const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video,playlist&maxResults=20&q=${encodeURIComponent(query)}&key=${YOUTUBE_API_KEY}`;
+            const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=20&q=${encodeURIComponent(query)}&key=${YOUTUBE_API_KEY}`;
             const response = await fetch(url);
             const data = await response.json();
             if (data.items && data.items.length > 0) {
-                const mappedResults = data.items
-                    .filter(item => item.id && (item.id.kind === 'youtube#video' || item.id.kind === 'youtube#playlist'))
-                    .map(item => ({
-                        title: item.snippet.title,
-                        artist: item.snippet.channelTitle,
-                        img: item.snippet.thumbnails.medium.url,
-                        url: item.id.videoId || item.id.playlistId,
-                        type: 'yt',
-                        resourceKind: item.id.kind,
-                        isPlaylist: item.id.kind === 'youtube#playlist'
-                    }));
+                const mappedResults = data.items.map(item => ({
+                    title: item.snippet.title, artist: item.snippet.channelTitle,
+                    img: item.snippet.thumbnails.medium.url, url: item.id.videoId, type: 'yt'
+                }));
                 currentList = mappedResults;
-                renderYouTubeSearchResults(mappedResults, query);
+                renderGrid(mappedResults, `Resultados de YouTube: "${query}"`, "<i class='fab fa-youtube'></i>");
             } else { throw new Error("No results"); }
         }
 
@@ -707,17 +693,6 @@
             </div>`;
         }
 
-        function renderYouTubeSearchResults(list, query) {
-            const indexedResults = list.map((result, sourceIndex) => ({ ...result, sourceIndex }));
-            const albums = indexedResults.filter(result => result.resourceKind === 'youtube#playlist');
-            const songs = indexedResults.filter(result => result.resourceKind === 'youtube#video');
-
-            if (albums.length) renderGrid(albums, `Álbumes: "${query}"`, "<i class='fas fa-compact-disc'></i>");
-            if (songs.length) renderGrid(songs, `Canciones: "${query}"`, "<i class='fas fa-music'></i>");
-
-            if (!albums.length && !songs.length) renderEmptyState(`Sin resultados para "${query}"`);
-        }
-
         function renderGrid(list, title, icon) {
             if (!list || list.length === 0) return;
             const container = document.getElementById('dynamicSections');
@@ -728,7 +703,7 @@
             list.forEach((song, idx) => {
                 const div = document.createElement('div');
                 div.className = 'card';
-                div.dataset.idx = song.sourceIndex ?? idx;
+                div.dataset.idx = idx;
                 div.style.animationDelay = `${Math.min(idx * 0.03, 0.5)}s`;
                 div.innerHTML = `
                     <div class="card-img-wrap">
@@ -744,7 +719,7 @@
                     <div class="play-btn"><i class="fas fa-play"></i></div>
                     <div class="card-title">${escapeHtml(song.title)}</div>
                     <div class="card-desc">${escapeHtml(song.artist)}</div>`;
-                div.onclick = () => play(song.sourceIndex ?? idx);
+                div.onclick = () => play(idx);
                 grid.appendChild(div);
             });
             section.appendChild(grid);
@@ -773,8 +748,8 @@
             setTrackLoading(true, idx);
 
             if (song.type === 'yt') {
-                if (window.YT && window.YT.Player) initYTPlayer(song.url, song.isPlaylist);
-                else setTimeout(() => initYTPlayer(song.url, song.isPlaylist), 500);
+                if (window.YT && window.YT.Player) initYTPlayer(song.url);
+                else setTimeout(() => initYTPlayer(song.url), 500);
             } else {
                 audioEl.src = song.url;
                 applyVolume(parseFloat(document.getElementById('volumeSlider').value));
@@ -787,23 +762,13 @@
             }
         }
 
-        function initYTPlayer(resourceId, isPlaylist = false) {
+        function initYTPlayer(videoId) {
             document.getElementById('yt-player-container').innerHTML = '<div id="yt-player"></div>';
-            const playerConfig = {
-                height: '0',
-                width: '0',
+            ytPlayer = new YT.Player('yt-player', {
+                height: '0', width: '0', videoId: videoId,
                 playerVars: { 'autoplay': 1, 'controls': 0, 'enablejsapi': 1, 'origin': window.location.origin },
                 events: { 'onReady': onYTReady, 'onStateChange': onYTStateChange, 'onError': onYTError }
-            };
-
-            if (isPlaylist) {
-                playerConfig.playerVars.listType = 'playlist';
-                playerConfig.playerVars.list = resourceId;
-            } else {
-                playerConfig.videoId = resourceId;
-            }
-
-            ytPlayer = new YT.Player('yt-player', playerConfig);
+            });
         }
 
         function onYTReady() {
