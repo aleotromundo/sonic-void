@@ -265,9 +265,9 @@
 
         /* --- MODO FLOTANTE (WINAMP STYLE) --- */
         .player-bar.floating {
-            position: fixed;
-            top: 20px; right: 20px; bottom: auto; left: auto;
-            width: 320px; height: 76px;
+            position: fixed !important;
+            top: 20px !important; right: 20px !important; bottom: auto !important; left: auto !important;
+            width: 320px !important; height: 76px !important;
             z-index: 9999 !important;
             border-radius: 14px !important;
             box-shadow: 0 14px 40px rgba(0,0,0,0.85) !important;
@@ -346,7 +346,7 @@
 
             .player-utils { display: none; }
 
-            .player-bar.floating { width: min(88vw, 300px); right: 16px; top: 16px; }
+            .player-bar.floating { width: min(88vw, 300px) !important; right: 16px !important; top: 16px !important; }
             .toast-container { right: 12px; left: 12px; align-items: stretch; }
             .toast { justify-content: center; }
         }
@@ -960,11 +960,6 @@
                 e.preventDefault();
                 pos3 = e.clientX;
                 pos4 = e.clientY;
-                // Fijamos la posición actual exacta ANTES de soltar el ancla "right",
-                // para que no haya un frame intermedio donde el navegador la reubique solo.
-                const rect = element.getBoundingClientRect();
-                element.style.top = rect.top + 'px';
-                element.style.left = rect.left + 'px';
                 element.style.right = 'auto';
                 document.onmouseup = closeDragElement;
                 document.onmousemove = elementDrag;
