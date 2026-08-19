@@ -147,6 +147,21 @@
         .results-view-toggle button.active { background: var(--bg-hover); color: white; box-shadow: 0 2px 8px rgba(0,0,0,0.25); }
         .results-view-toggle button:disabled { opacity: 0.38; cursor: not-allowed; }
 
+        /* Fila de canales (subgrupo automático de resultados) */
+        .channel-scroll { display: flex; gap: 16px; overflow-x: auto; padding: 4px 2px 12px; scrollbar-width: thin; }
+        .channel-chip { flex: 0 0 auto; width: 132px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; padding: 14px 10px; border-radius: 12px; border: 1px solid var(--border-soft); background: var(--bg-card); cursor: pointer; transition: background .2s var(--ease), transform .2s var(--ease), border-color .2s var(--ease); }
+        .channel-chip:hover { background: var(--bg-hover); transform: translateY(-3px); border-color: rgba(255,255,255,0.14); }
+        .channel-avatar-wrap { width: 84px; height: 84px; border-radius: 50%; overflow: hidden; background: #222; box-shadow: 0 4px 12px rgba(0,0,0,0.35); position: relative; flex-shrink: 0; }
+        .channel-avatar-wrap img { width: 100%; height: 100%; object-fit: cover; }
+        .channel-avatar-wrap .channel-badge { position: absolute; bottom: -2px; right: -2px; width: 24px; height: 24px; border-radius: 50%; background: var(--accent-2); display: flex; align-items: center; justify-content: center; font-size: 0.65rem; color: #001018; border: 2px solid var(--bg-dark); }
+        .channel-chip-title { font-weight: 800; font-size: 0.82rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+        .channel-chip-desc { color: var(--text-gray); font-size: 0.68rem; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; }
+
+        /* Chip de "estás viendo el canal X" cuando se filtra por canal */
+        .channel-filter-chip { display: inline-flex; align-items: center; gap: 10px; padding: 8px 14px; border-radius: 50px; background: rgba(41,182,246,0.14); border: 1px solid rgba(41,182,246,0.35); color: var(--accent-2); font-weight: 800; font-size: 0.82rem; margin-bottom: 18px; }
+        .channel-filter-chip button { background: none; border: none; color: inherit; cursor: pointer; font-size: 0.9rem; opacity: 0.85; line-height: 1; }
+        .channel-filter-chip button:hover { opacity: 1; }
+
         .song-list { display: flex; flex-direction: column; gap: 8px; }
         .song-row { display: grid; grid-template-columns: 36px 50px minmax(0, 1fr) auto; align-items: center; gap: 14px; width: 100%; padding: 10px 14px; border: 1px solid var(--border-soft); border-radius: 8px; background: var(--bg-card); color: white; cursor: pointer; text-align: left; transition: background .2s var(--ease), border-color .2s var(--ease), transform .2s var(--ease); }
         .song-row:hover { background: var(--bg-hover); border-color: rgba(255,255,255,0.14); transform: translateX(3px); }
@@ -156,6 +171,8 @@
         .song-row-details { min-width: 0; }
         .song-row-title { display: block; font-size: 0.9rem; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .song-row-artist { display: block; margin-top: 3px; color: var(--text-gray); font-size: 0.78rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .card-desc.artist-link, .song-row-artist.artist-link { cursor: pointer; width: fit-content; }
+        .card-desc.artist-link:hover, .song-row-artist.artist-link:hover { color: var(--accent-2); text-decoration: underline; }
         .song-row-play { color: var(--accent); font-size: 0.9rem; }
         @media (max-width: 560px) { .results-view-switcher { align-items: flex-start; flex-direction: column; } .song-row { grid-template-columns: 28px 44px minmax(0, 1fr) auto; gap: 10px; padding: 9px 10px; } .song-row-img { width: 44px; height: 44px; } }
 
@@ -521,8 +538,7 @@
         let shuffleMode = false;
         let isSeeking = false;
         let lastVolume = 0.8;
-        let activeYouTubeSearchView = 'albums';
-        let currentYouTubeSearchGroups = null;
+        let channelFilter = null; // { id, title } cuando el usuario entra a ver el contenido de un canal
 
         const audioEl = document.getElementById('audio-element');
         const playerBar = document.getElementById('playerBar');
@@ -575,14 +591,37 @@
             const query = searchInput.value.trim();
             searchClearBtn.classList.toggle('show', query.length > 0);
             if (!query) { resetView(); return; }
+            channelFilter = null;
             searchTimeout = setTimeout(() => performSmartSearch(query), 600);
         }
 
         function clearSearch() {
             searchInput.value = '';
             searchClearBtn.classList.remove('show');
+            channelFilter = null;
             resetView();
             searchInput.focus();
+        }
+
+        // Convierte los items crudos de la YouTube Data API (video/playlist/channel) a nuestro formato interno
+        function mapYouTubeItems(items) {
+            return items
+                .filter(item => item.id && (item.id.kind === 'youtube#video' || item.id.kind === 'youtube#playlist' || item.id.kind === 'youtube#channel'))
+                .map(item => {
+                    const isChannel = item.id.kind === 'youtube#channel';
+                    const thumb = item.snippet.thumbnails && (item.snippet.thumbnails.medium || item.snippet.thumbnails.default || item.snippet.thumbnails.high);
+                    return {
+                        title: item.snippet.title,
+                        artist: isChannel ? 'Canal de YouTube' : item.snippet.channelTitle,
+                        img: thumb ? thumb.url : '',
+                        url: item.id.videoId || item.id.playlistId || item.id.channelId,
+                        type: 'yt',
+                        resourceKind: item.id.kind,
+                        isPlaylist: item.id.kind === 'youtube#playlist',
+                        channelId: item.snippet.channelId,
+                        channelTitle: item.snippet.channelTitle
+                    };
+                });
         }
 
         async function performSmartSearch(query) {
@@ -600,33 +639,28 @@
                     await searchYouTube(query);
                 } else {
                     try {
-                        const response = await fetch(`/api/search?query=${encodeURIComponent(query)}&type=youtube&resourceTypes=video,playlist`);
+                        const channelParam = channelFilter ? `&channelId=${encodeURIComponent(channelFilter.id)}` : '';
+                        const resourceTypes = channelFilter ? 'video,playlist' : 'video,playlist,channel';
+                        const response = await fetch(`/api/search?query=${encodeURIComponent(query)}&type=youtube&resourceTypes=${resourceTypes}${channelParam}`);
                         if (response.ok) {
                             const data = await response.json();
                             if (data.items && data.items.length > 0) {
-                                const mappedResults = data.items
-                                    .filter(item => item.id && (item.id.kind === 'youtube#video' || item.id.kind === 'youtube#playlist'))
-                                    .map(item => ({
-                                        title: item.snippet.title,
-                                        artist: item.snippet.channelTitle,
-                                        img: item.snippet.thumbnails.medium.url,
-                                        url: item.id.videoId || item.id.playlistId,
-                                        type: 'yt',
-                                        resourceKind: item.id.kind,
-                                        isPlaylist: item.id.kind === 'youtube#playlist'
-                                    }));
-                                currentList = mappedResults;
+                                const mappedResults = mapYouTubeItems(data.items);
                                 renderYouTubeSearchResults(mappedResults, query);
                                 loader.style.display = 'none';
                                 return;
                             }
                         }
                     } catch (e) { console.warn("Backend no disponible...", e); }
-                    await searchOpenverse(query);
+                    if (!channelFilter) await searchOpenverse(query);
+                    else { renderEmptyState(`Sin resultados para "${query}" en este canal`); }
                 }
             } catch (e) {
                 console.warn("YouTube falló, probando Openverse...", e);
-                try { await searchOpenverse(query); }
+                try {
+                    if (channelFilter) throw e;
+                    await searchOpenverse(query);
+                }
                 catch (e2) { renderEmptyState(`Sin resultados para "${query}"`); showToast('No encontramos resultados', 'fa-circle-exclamation'); }
             } finally {
                 if (loader.style.display === 'flex') loader.style.display = 'none';
@@ -634,24 +668,29 @@
         }
 
         async function searchYouTube(query) {
-            const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video,playlist&maxResults=20&q=${encodeURIComponent(query)}&key=${YOUTUBE_API_KEY}`;
+            const channelParam = channelFilter ? `&channelId=${encodeURIComponent(channelFilter.id)}` : '';
+            const typeParam = channelFilter ? 'video,playlist' : 'video,playlist,channel';
+            const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=${typeParam}&maxResults=20&q=${encodeURIComponent(query)}${channelParam}&key=${YOUTUBE_API_KEY}`;
             const response = await fetch(url);
             const data = await response.json();
             if (data.items && data.items.length > 0) {
-                const mappedResults = data.items
-                    .filter(item => item.id && (item.id.kind === 'youtube#video' || item.id.kind === 'youtube#playlist'))
-                    .map(item => ({
-                        title: item.snippet.title,
-                        artist: item.snippet.channelTitle,
-                        img: item.snippet.thumbnails.medium.url,
-                        url: item.id.videoId || item.id.playlistId,
-                        type: 'yt',
-                        resourceKind: item.id.kind,
-                        isPlaylist: item.id.kind === 'youtube#playlist'
-                    }));
-                currentList = mappedResults;
+                const mappedResults = mapYouTubeItems(data.items);
                 renderYouTubeSearchResults(mappedResults, query);
             } else { throw new Error("No results"); }
+        }
+
+        // Entrar a ver el contenido (álbumes/canciones) de un canal específico
+        function browseChannel(channelId, channelTitle) {
+            channelFilter = { id: channelId, title: channelTitle };
+            searchInput.value = '';
+            searchClearBtn.classList.remove('show');
+            performSmartSearch(searchQuery || 'canciones');
+        }
+
+        function clearChannelFilter() {
+            const q = searchQuery;
+            channelFilter = null;
+            if (q) performSmartSearch(q); else resetView();
         }
 
         async function getOpenverseToken() {
@@ -674,22 +713,33 @@
         async function searchOpenverse(query) {
             const token = await getOpenverseToken();
             const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-            const url = `https://api.openverse.org/v1/audio/?q=${encodeURIComponent(query)}&page_size=20`;
+            // category=music le pide a Openverse que priorice música por sobre efectos de sonido, podcasts, etc.
+            const url = `https://api.openverse.org/v1/audio/?q=${encodeURIComponent(query)}&category=music&page_size=20`;
             const response = await fetch(url, { headers });
             const data = await response.json();
             if (data.results && data.results.length > 0) {
-                const mappedResults = data.results.map(track => ({
-                    title: track.title, artist: track.creator,
-                    img: track.thumbnail || '',
-                    url: track.url, type: 'mp3', genre: (track.genres && track.genres[0]) || 'unknown'
-                }));
+                const mappedResults = data.results
+                    // Filtramos los .wav: pesan mucho y casi nunca traen carátula
+                    .filter(track => (track.filetype || '').toLowerCase() !== 'wav' && !/\.wav($|\?)/i.test(track.url || ''))
+                    // Por si la API mezcla categorías: sacamos lo marcado explícitamente como efecto de sonido
+                    .filter(track => (track.category || '').toLowerCase() !== 'sound_effect')
+                    // Descartamos clips brevísimos (stingers/efectos sin categoría) sin tocar intros reales de canciones
+                    .filter(track => !track.duration || track.duration >= 15000)
+                    .map(track => ({
+                        title: track.title, artist: track.creator,
+                        img: track.thumbnail || '',
+                        url: track.url, type: 'mp3', genre: (track.genres && track.genres[0]) || 'unknown'
+                    }))
+                    // Priorizamos los que tienen carátula, para que no queden mezclados con los que no tienen ícono
+                    .sort((a, b) => (b.img ? 1 : 0) - (a.img ? 1 : 0));
+                if (mappedResults.length === 0) throw new Error("No results");
                 currentList = mappedResults;
                 renderGrid(mappedResults, `Resultados Libres: "${query}"`, "<i class='fas fa-globe'></i>");
             } else { throw new Error("No results"); }
         }
 
         function setMood(mood) {
-            currentMood = mood; searchQuery = "";
+            currentMood = mood; searchQuery = ""; channelFilter = null;
             searchInput.value = ""; searchClearBtn.classList.remove('show');
             document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active'));
             event.currentTarget.classList.add('active');
@@ -697,7 +747,7 @@
         }
 
         function resetView() {
-            searchQuery = ""; currentMood = null;
+            searchQuery = ""; currentMood = null; channelFilter = null;
             searchInput.value = ""; searchClearBtn.classList.remove('show');
             document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.nav-links li').forEach(l => l.classList.remove('active'));
@@ -729,49 +779,65 @@
             </div>`;
         }
 
+        // Separa automáticamente los resultados en Canales / Álbumes / Canciones y muestra
+        // los tres subgrupos de una, sin que el usuario tenga que elegir ningún filtro.
         function renderYouTubeSearchResults(list, query) {
-            const indexedResults = list.map((result, sourceIndex) => ({ ...result, sourceIndex }));
-            const albums = indexedResults.filter(result => result.resourceKind === 'youtube#playlist');
-            const songs = indexedResults.filter(result => result.resourceKind === 'youtube#video');
+            const channels = list.filter(result => result.resourceKind === 'youtube#channel');
+            const albumsRaw = list.filter(result => result.resourceKind === 'youtube#playlist');
+            const songsRaw = list.filter(result => result.resourceKind === 'youtube#video');
 
-            if (!albums.length && !songs.length) {
-                currentYouTubeSearchGroups = null;
+            if (!channels.length && !albumsRaw.length && !songsRaw.length) {
                 renderEmptyState(`Sin resultados para "${query}"`);
                 return;
             }
 
-            currentYouTubeSearchGroups = { albums, songs, query };
-            activeYouTubeSearchView = albums.length ? 'albums' : 'songs';
-            renderActiveYouTubeSearchView();
-        }
+            // Solo lo reproducible (álbumes y canciones) entra en currentList, indexado en ese orden
+            const playable = [...albumsRaw, ...songsRaw].map((item, sourceIndex) => ({ ...item, sourceIndex }));
+            currentList = playable;
+            const albums = playable.filter(item => item.resourceKind === 'youtube#playlist');
+            const songs = playable.filter(item => item.resourceKind === 'youtube#video');
 
-        function setYouTubeSearchView(view) {
-            if (!currentYouTubeSearchGroups || !currentYouTubeSearchGroups[view].length) return;
-            activeYouTubeSearchView = view;
-            renderActiveYouTubeSearchView();
-        }
-
-        function renderActiveYouTubeSearchView() {
-            if (!currentYouTubeSearchGroups) return;
-            const { albums, songs, query } = currentYouTubeSearchGroups;
             const container = document.getElementById('dynamicSections');
             container.innerHTML = '';
 
-            const switcher = document.createElement('div');
-            switcher.className = 'results-view-switcher';
-            switcher.innerHTML = `
-                <span class="results-view-label">Resultados de YouTube</span>
-                <div class="results-view-toggle" role="group" aria-label="Vista de resultados">
-                    <button type="button" class="${activeYouTubeSearchView === 'albums' ? 'active' : ''}" onclick="setYouTubeSearchView('albums')" ${albums.length ? '' : 'disabled'} aria-pressed="${activeYouTubeSearchView === 'albums'}"><i class="fas fa-grip"></i> Álbumes</button>
-                    <button type="button" class="${activeYouTubeSearchView === 'songs' ? 'active' : ''}" onclick="setYouTubeSearchView('songs')" ${songs.length ? '' : 'disabled'} aria-pressed="${activeYouTubeSearchView === 'songs'}"><i class="fas fa-list"></i> Canciones</button>
+            if (channelFilter) {
+                const chip = document.createElement('div');
+                chip.innerHTML = `<div class="channel-filter-chip">
+                    <i class="fas fa-satellite-dish"></i>
+                    <span>Viendo canal: ${escapeHtml(channelFilter.title)}</span>
+                    <button type="button" onclick="clearChannelFilter()" aria-label="Quitar filtro de canal"><i class="fas fa-xmark"></i></button>
                 </div>`;
-            container.appendChild(switcher);
-
-            if (activeYouTubeSearchView === 'albums') {
-                renderGrid(albums, `Álbumes: "${query}"`, "<i class='fas fa-compact-disc'></i>");
-            } else {
-                renderSongList(songs, `Canciones: "${query}"`, "<i class='fas fa-music'></i>");
+                container.appendChild(chip);
             }
+
+            if (channels.length) renderChannelRow(channels, channelFilter ? `Canales relacionados` : `Canales: "${query}"`);
+            if (albums.length) renderGrid(albums, `Álbumes: "${query}"`, "<i class='fas fa-compact-disc'></i>");
+            if (songs.length) renderSongList(songs, `Canciones: "${query}"`, "<i class='fas fa-music'></i>");
+        }
+
+        function renderChannelRow(channels, title) {
+            const container = document.getElementById('dynamicSections');
+            const section = document.createElement('div');
+            section.innerHTML = `<div class="section-title"><i class="fas fa-satellite-dish"></i> ${escapeHtml(title)}</div>`;
+            const scroll = document.createElement('div');
+            scroll.className = 'channel-scroll';
+
+            channels.forEach(ch => {
+                const chip = document.createElement('div');
+                chip.className = 'channel-chip';
+                chip.innerHTML = `
+                    <div class="channel-avatar-wrap">
+                        <img src="${ch.img || ''}" alt="" loading="lazy" onerror="this.style.visibility='hidden';">
+                        <span class="channel-badge"><i class="fas fa-play"></i></span>
+                    </div>
+                    <span class="channel-chip-title">${escapeHtml(ch.title)}</span>
+                    <span class="channel-chip-desc">Canal</span>`;
+                chip.onclick = () => browseChannel(ch.url, ch.title);
+                scroll.appendChild(chip);
+            });
+
+            section.appendChild(scroll);
+            container.appendChild(section);
         }
 
         function renderSongList(list, title, icon) {
@@ -786,15 +852,22 @@
                 row.type = 'button';
                 row.className = 'song-row';
                 row.dataset.idx = song.sourceIndex ?? idx;
+                const artistClickable = !!song.channelId;
                 row.innerHTML = `
                     <span class="song-row-number">${idx + 1}</span>
                     <img src="${song.img || ''}" class="song-row-img" loading="lazy" alt="" onerror="this.style.visibility='hidden';">
                     <span class="song-row-details">
                         <span class="song-row-title">${escapeHtml(song.title)}</span>
-                        <span class="song-row-artist">${escapeHtml(song.artist)}</span>
+                        <span class="song-row-artist${artistClickable ? ' artist-link' : ''}">${escapeHtml(song.artist)}</span>
                     </span>
                     <i class="fas fa-play song-row-play" aria-hidden="true"></i>`;
                 row.onclick = () => play(song.sourceIndex ?? idx);
+                if (artistClickable) {
+                    row.querySelector('.song-row-artist').onclick = (e) => {
+                        e.stopPropagation();
+                        browseChannel(song.channelId, song.channelTitle || song.artist);
+                    };
+                }
                 songList.appendChild(row);
             });
 
@@ -814,6 +887,7 @@
                 div.className = 'card';
                 div.dataset.idx = song.sourceIndex ?? idx;
                 div.style.animationDelay = `${Math.min(idx * 0.03, 0.5)}s`;
+                const artistClickable = !!song.channelId;
                 div.innerHTML = `
                     <div class="card-img-wrap">
                         <div class="skeleton"></div>
@@ -827,8 +901,14 @@
                     </div>
                     <div class="play-btn"><i class="fas fa-play"></i></div>
                     <div class="card-title">${escapeHtml(song.title)}</div>
-                    <div class="card-desc">${escapeHtml(song.artist)}</div>`;
+                    <div class="card-desc${artistClickable ? ' artist-link' : ''}">${escapeHtml(song.artist)}</div>`;
                 div.onclick = () => play(song.sourceIndex ?? idx);
+                if (artistClickable) {
+                    div.querySelector('.card-desc').onclick = (e) => {
+                        e.stopPropagation();
+                        browseChannel(song.channelId, song.channelTitle || song.artist);
+                    };
+                }
                 grid.appendChild(div);
             });
             section.appendChild(grid);
