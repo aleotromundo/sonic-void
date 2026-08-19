@@ -248,7 +248,7 @@
             </div>
 
             <div class="mood-selector">
-                <button class="mood-btn mood-energy" onclick="setMood('energy')"> Energía</button>
+                <button class="mood-btn mood-energy" onclick="setMood('energy')">⚡ Energía</button>
                 <button class="mood-btn mood-relax" onclick="setMood('relax')">☁️ Relax</button>
                 <button class="mood-btn mood-party" onclick="setMood('party')">🍸 Fiesta</button>
                 <button class="mood-btn mood-sad" onclick="setMood('sad')">Melancolía</button>
@@ -286,8 +286,8 @@
         </div>
         <div class="player-utils">
             <i class="fas fa-random" id="shuffleIcon" onclick="toggleShuffle()" style="cursor:pointer; opacity:0.5;"></i>
-            <!-- BOTÓN MODO FLOTANTE / PiP -->
-            <i class="fas fa-external-link-alt" id="pipBtn" onclick="togglePiPMode()" title="Modo Flotante Externo" style="cursor:pointer; margin-left: 15px; opacity: 0.7;"></i>
+            <!-- BOTÓN MODO FLOTANTE -->
+            <i class="fas fa-compress-arrows-alt" id="pipBtn" onclick="toggleFloatingMode()" title="Modo Flotante" style="cursor:pointer; margin-left: 15px; opacity: 0.7;"></i>
             <i class="fas fa-volume-up" style="opacity:0.7;"></i>
         </div>
     </div>
@@ -297,7 +297,7 @@
 
     <script>
         // --- CONFIGURACIÓN ---
-        // ⚠️ IMPORTANTE: Si usas Vercel con variables de entorno, deja esto vacío.
+        // ⚠️ IMPORTANTE: Si usas Vercel, deja esto vacío y usa las variables de entorno en /api/search
         // Si pruebas localmente, pega tus claves aquí temporalmente.
         const YOUTUBE_API_KEY = ''; 
         const OPENVERSE_CLIENT_ID = ''; 
@@ -317,9 +317,6 @@
         let shuffleMode = false;
         
         const audioEl = document.getElementById('audio-element');
-        
-        // Elemento de video oculto para el truco de PiP en MP3 (si se implementa)
-        let fakeVideoEl = null; 
 
         resetView();
         loadYouTubeAPI();
@@ -370,7 +367,9 @@
                                 return;
                             }
                         }
-                    } catch (e) { console.warn("Backend no disponible...", e); }
+                    } catch (e) {
+                        console.warn("Backend no disponible, probando Openverse...", e);
+                    }
                     // Fallback a Openverse si falla YouTube
                     await searchOpenverse(query);
                 }
@@ -387,6 +386,7 @@
             const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=20&q=${encodeURIComponent(query)}&key=${YOUTUBE_API_KEY}`;
             const response = await fetch(url);
             const data = await response.json();
+
             if (data.items && data.items.length > 0) {
                 const mappedResults = data.items.map(item => ({
                     title: item.snippet.title, artist: item.snippet.channelTitle,
@@ -394,7 +394,9 @@
                 }));
                 currentList = mappedResults;
                 renderGrid(mappedResults, `Resultados de YouTube: "${query}"`, "<i class='fab fa-youtube'></i>");
-            } else { throw new Error("No results"); }
+            } else {
+                throw new Error("No results in YouTube");
+            }
         }
 
         async function getOpenverseToken() {
@@ -420,20 +422,50 @@
             const url = `https://api.openverse.org/v1/audio/?q=${encodeURIComponent(query)}&page_size=20`;
             const response = await fetch(url, { headers });
             const data = await response.json();
+
             if (data.results && data.results.length > 0) {
-                const mappedResults = data.results.map(track => ({
-                    title: track.title, artist: track.creator,
-                    img: track.thumbnail || 'https://via.placeholder.com/300x180?text=No+Cover',
-                    url: track.url, type: 'mp3', genre: (track.genres && track.genres[0]) || 'unknown'
-                }));
+                const mappedResults = data.results.map(track => {
+                    let genre = 'unknown';
+                    if (track.genres && track.genres.length > 0) {
+                        genre = track.genres[0];
+                    } else if (track.category) {
+                        genre = track.category; 
+                    }
+                    return {
+                        title: track.title || 'Sin título',
+                        artist: track.creator || 'Desconocido',
+                        img: track.thumbnail || 'https://via.placeholder.com/300x180?text=No+Cover',
+                        url: track.url, type: 'mp3', genre: genre
+                    };
+                });
                 currentList = mappedResults;
                 renderGrid(mappedResults, `Resultados Libres: "${query}"`, "<i class='fas fa-globe'></i>");
-            } else { throw new Error("No results"); }
+            } else {
+                throw new Error("No results in Openverse");
+            }
         }
 
-        function setMood(mood) { currentMood = mood; searchQuery = ""; document.getElementById('searchInput').value = ""; document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active')); event.currentTarget.classList.add('active'); performSmartSearch(mood); }
-        function resetView() { searchQuery = ""; currentMood = null; document.getElementById('searchInput').value = ""; document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active')); document.querySelectorAll('.nav-links li').forEach(l => l.classList.remove('active')); document.querySelector('.nav-links li:first-child').classList.add('active'); performSmartSearch("rock classics"); }
-        function showSection(section) { if(section === 'favorites') renderGrid(favorites, "Tus Favoritos", "<i class='fas fa-heart'></i>"); }
+        function setMood(mood) {
+            currentMood = mood;
+            searchQuery = "";
+            document.getElementById('searchInput').value = "";
+            document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            performSmartSearch(mood); 
+        }
+
+        function resetView() {
+            searchQuery = ""; currentMood = null;
+            document.getElementById('searchInput').value = "";
+            document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.nav-links li').forEach(l => l.classList.remove('active'));
+            document.querySelector('.nav-links li:first-child').classList.add('active');
+            performSmartSearch("rock classics");
+        }
+
+        function showSection(section) {
+            if(section === 'favorites') renderGrid(favorites, "Tus Favoritos", "<i class='fas fa-heart'></i>");
+        }
 
         function renderGrid(list, title, icon) {
             if (!list || list.length === 0) return;
@@ -442,10 +474,16 @@
             section.innerHTML = `<div class="section-title">${icon} ${title}</div>`;
             const grid = document.createElement('div');
             grid.className = 'grid';
+
             list.forEach((song, idx) => {
                 const div = document.createElement('div');
                 div.className = 'card';
-                div.innerHTML = `<img src="${song.img}" class="card-img" loading="lazy"><div class="play-btn"><i class="fas fa-play"></i></div><div class="card-title">${song.title}</div><div class="card-desc">${song.artist}</div>`;
+                div.innerHTML = `
+                    <img src="${song.img}" class="card-img" loading="lazy">
+                    <div class="play-btn"><i class="fas fa-play"></i></div>
+                    <div class="card-title">${song.title}</div>
+                    <div class="card-desc">${song.artist}</div>
+                `;
                 div.onclick = () => play(idx);
                 grid.appendChild(div);
             });
@@ -453,7 +491,13 @@
             container.appendChild(section);
         }
 
-        function loadYouTubeAPI() { if (window.YT && window.YT.Player) return; const tag = document.createElement('script'); tag.src = "https://www.youtube.com/iframe_api"; document.getElementsByTagName('script')[0].parentNode.insertBefore(tag, document.getElementsByTagName('script')[0]); window.onYouTubeIframeAPIReady = () => console.log("YT Engine Ready"); }
+        function loadYouTubeAPI() {
+            if (window.YT && window.YT.Player) return;
+            const tag = document.createElement('script');
+            tag.src = "https://www.youtube.com/iframe_api";
+            document.getElementsByTagName('script')[0].parentNode.insertBefore(tag, document.getElementsByTagName('script')[0]);
+            window.onYouTubeIframeAPIReady = () => console.log("YT Engine Ready");
+        }
 
         function play(idx) {
             currentIndex = idx;
@@ -505,97 +549,93 @@
             updateIcon();
         }
 
-        function nextSong(manual = false) { if(manual && shuffleMode) { play(Math.floor(Math.random() * currentList.length)); return; } let next = currentIndex + 1; if(next >= currentList.length) next = 0; play(next); }
-        function prevSong() { let prev = currentIndex - 1; if(prev < 0) prev = currentList.length - 1; play(prev); }
-        function stopAll() { if(ytPlayer) { ytPlayer.stopVideo(); ytPlayer.destroy(); ytPlayer = null; } audioEl.pause(); if(progressInterval) clearInterval(progressInterval); isPlaying = false; updateIcon(); document.getElementById('progFill').style.width = '0%'; }
-        function startProgress(source) { if(progressInterval) clearInterval(progressInterval); progressInterval = setInterval(() => { let curr, dur; if(source === ytPlayer) { curr = source.getCurrentTime(); dur = source.getDuration(); } else { curr = source.currentTime; dur = source.duration; } if(dur) { document.getElementById('progFill').style.width = `${(curr/dur)*100}%`; document.getElementById('currTime').innerText = format(curr); document.getElementById('totalTime').innerText = format(dur); } }, 500); }
-        function updateProgress(curr, dur) { }
+        function nextSong(manual = false) {
+            if(manual && shuffleMode) { play(Math.floor(Math.random() * currentList.length)); return; }
+            let next = currentIndex + 1;
+            if(next >= currentList.length) next = 0;
+            play(next);
+        }
+
+        function prevSong() {
+            let prev = currentIndex - 1;
+            if(prev < 0) prev = currentList.length - 1;
+            play(prev);
+        }
+
+        function stopAll() {
+            if(ytPlayer) { ytPlayer.stopVideo(); ytPlayer.destroy(); ytPlayer = null; }
+            audioEl.pause();
+            if(progressInterval) clearInterval(progressInterval);
+            isPlaying = false; updateIcon();
+            document.getElementById('progFill').style.width = '0%';
+        }
+
+        function startProgress(source) {
+            if(progressInterval) clearInterval(progressInterval);
+            progressInterval = setInterval(() => {
+                let curr, dur;
+                if(source === ytPlayer) { curr = source.getCurrentTime(); dur = source.getDuration(); }
+                else { curr = source.currentTime; dur = source.duration; }
+                if(dur) {
+                    document.getElementById('progFill').style.width = `${(curr/dur)*100}%`;
+                    document.getElementById('currTime').innerText = format(curr);
+                    document.getElementById('totalTime').innerText = format(dur);
+                }
+            }, 500);
+        }
+
+        function updateProgress(curr, dur) { /* Helper */ }
         function updateIcon() { document.getElementById('playBtn').innerHTML = isPlaying ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>'; }
         function format(sec) { if(!sec) return "0:00"; const m=Math.floor(sec/60); const s=Math.floor(sec%60); return `${m}:${s<10?'0'+s:s}`; }
-        function toggleFavorite() { if(currentIndex === -1) return; const song = currentList[currentIndex]; const idx = favorites.findIndex(f => f.title === song.title && f.artist === song.artist); if(idx >= 0) favorites.splice(idx, 1); else favorites.push(song); localStorage.setItem('nowarfy_favs', JSON.stringify(favorites)); updateFavButton(song); document.getElementById('favCount').innerText = favorites.length; }
-        function updateFavButton(song) { const exists = favorites.some(f => f.title === song.title && f.artist === song.artist); document.getElementById('favBtn').className = exists ? "fas fa-heart fav-btn active" : "far fa-heart fav-btn"; }
-        function toggleShuffle() { shuffleMode = !shuffleMode; const icon = document.getElementById('shuffleIcon'); icon.style.color = shuffleMode ? 'var(--spotify-green)' : '#777'; icon.style.opacity = shuffleMode ? '1' : '0.5'; }
 
-        // --- MODO PICTURE-IN-PICTURE (CON FALLBACK INTELIGENTE) ---
-        let isPiPActive = false;
-        const pipBtn = document.getElementById('pipBtn');
-        const playerBar = document.querySelector('.player-bar');
-
-        async function togglePiPMode() {
+        function toggleFavorite() {
+            if(currentIndex === -1) return;
             const song = currentList[currentIndex];
-            if (!song) return alert("Selecciona una canción primero.");
-
-            if (document.pictureInPictureElement) {
-                await document.exitPictureInPicture();
-                isPiPActive = false;
-                updatePiPButtonState();
-                return;
-            }
-
-            try {
-                if (song.type === 'yt' && ytPlayer) {
-                    // CASO YOUTUBE: PiP Nativo del Iframe
-                    const iframe = document.querySelector('iframe');
-                    if (iframe && iframe.requestPictureInPicture) {
-                        await iframe.requestPictureInPicture();
-                        isPiPActive = true;
-                        updatePiPButtonState();
-                    } else {
-                        alert("Tu navegador no soporta PiP para este video.");
-                    }
-                } else if (song.type === 'mp3') {
-                    // CASO MP3: Activar el "Modo Flotante Interno" (CSS) como alternativa superior
-                    activateInternalFloatingMode();
-                }
-            } catch (error) {
-                console.error("Error PiP:", error);
-                // Fallback a modo interno si falla
-                activateInternalFloatingMode();
-            }
+            const idx = favorites.findIndex(f => f.title === song.title && f.artist === song.artist);
+            if(idx >= 0) favorites.splice(idx, 1); else favorites.push(song);
+            localStorage.setItem('nowarfy_favs', JSON.stringify(favorites));
+            updateFavButton(song);
+            document.getElementById('favCount').innerText = favorites.length;
+        }
+        function updateFavButton(song) {
+            const exists = favorites.some(f => f.title === song.title && f.artist === song.artist);
+            document.getElementById('favBtn').className = exists ? "fas fa-heart fav-btn active" : "far fa-heart fav-btn";
+        }
+        
+        function toggleShuffle() {
+            shuffleMode = !shuffleMode;
+            const icon = document.getElementById('shuffleIcon');
+            icon.style.color = shuffleMode ? 'var(--spotify-green)' : '#777';
+            icon.style.opacity = shuffleMode ? '1' : '0.5';
         }
 
-        function activateInternalFloatingMode() {
-            // Activa el modo flotante CSS que ya definimos (Winamp style)
-            playerBar.classList.add('floating');
-            pipBtn.classList.add('active');
-            pipBtn.classList.remove('fa-external-link-alt');
-            pipBtn.classList.add('fa-compress'); 
-            pipBtn.style.color = 'var(--spotify-green)';
-            pipBtn.style.opacity = '1';
+        // --- MODO FLOTANTE (WINAMP STYLE) ---
+        let isFloating = false;
+        const playerBar = document.querySelector('.player-bar');
+        const pipBtn = document.getElementById('pipBtn');
+
+        function toggleFloatingMode() {
+            isFloating = !isFloating;
             
-            // Hacerla arrastrable
-            makeDraggable(playerBar);
-            // Opcional: Alerta informativa
-            // alert("💡 Modo Flotante Activado (Interno).\nPara MP3, el navegador no permite salir de la pestaña sin video. ¡Pero puedes mover esta ventana por toda la pantalla!");
-        }
-
-        function updatePiPButtonState() {
-            if (isPiPActive) {
+            if (isFloating) {
+                playerBar.classList.add('floating');
                 pipBtn.classList.add('active');
-                pipBtn.classList.remove('fa-external-link-alt');
-                pipBtn.classList.add('fa-compress');
-                pipBtn.style.color = 'var(--spotify-green)';
-                pipBtn.style.opacity = '1';
+                pipBtn.classList.remove('fa-compress-arrows-alt');
+                pipBtn.classList.add('fa-expand-arrows-alt');
+                makeDraggable(playerBar);
             } else {
-                pipBtn.classList.remove('active');
-                pipBtn.classList.remove('fa-compress');
-                pipBtn.classList.add('fa-external-link-alt');
-                pipBtn.style.color = 'var(--text-gray)';
-                pipBtn.style.opacity = '0.7';
-                // Asegurar que el modo interno también se desactive si salimos de PiP externo
                 playerBar.classList.remove('floating');
+                pipBtn.classList.remove('active');
+                pipBtn.classList.remove('fa-expand-arrows-alt');
+                pipBtn.classList.add('fa-compress-arrows-alt');
                 playerBar.onmousedown = null;
             }
         }
 
-        document.addEventListener('leavepictureinpicture', () => {
-            isPiPActive = false;
-            updatePiPButtonState();
-        });
-
         function makeDraggable(element) {
             let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
             element.onmousedown = dragMouseDown;
+
             function dragMouseDown(e) {
                 e = e || window.event;
                 e.preventDefault();
@@ -604,6 +644,7 @@
                 document.onmouseup = closeDragElement;
                 document.onmousemove = elementDrag;
             }
+
             function elementDrag(e) {
                 e = e || window.event;
                 e.preventDefault();
@@ -614,6 +655,7 @@
                 element.style.top = (element.offsetTop - pos2) + "px";
                 element.style.left = (element.offsetLeft - pos1) + "px";
             }
+
             function closeDragElement() {
                 document.onmouseup = null;
                 document.onmousemove = null;
