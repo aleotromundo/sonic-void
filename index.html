@@ -540,6 +540,27 @@
         let lastVolume = 0.8;
         let channelFilter = null; // { id, title } cuando el usuario entra a ver el contenido de un canal
 
+        // Secciones para la pantalla de Inicio: cada una es una fila propia con canciones,
+        // así la pantalla arranca llena de opciones en vez de depender de una sola búsqueda.
+        // IMPORTANTE: esto tiene que estar definido ANTES de la llamada inicial a resetView() más abajo.
+        const HOME_SECTIONS = [
+            { query: 'rock classics', label: 'Rock clásico' },
+            { query: 'pop hits', label: 'Pop de hoy' },
+            { query: 'indie rock', label: 'Indie para descubrir' },
+            { query: 'hip hop hits', label: 'Hip Hop' },
+            { query: 'electronic music mix', label: 'Electrónica' },
+            { query: 'jazz classics', label: 'Jazz clásico' },
+            { query: 'latin hits', label: 'Latinos' },
+            { query: 'reggae essentials', label: 'Reggae' },
+            { query: 'metal classics', label: 'Metal' },
+            { query: '80s hits', label: 'Lo mejor de los 80' },
+            { query: '90s hits', label: 'Lo mejor de los 90' },
+            { query: 'acoustic covers', label: 'Acústico' },
+            { query: 'funk soul classics', label: 'Funk & Soul' },
+            { query: 'k-pop hits', label: 'K-Pop' },
+            { query: 'lofi beats', label: 'Lo-fi para concentrarte' }
+        ];
+
         const audioEl = document.getElementById('audio-element');
         const playerBar = document.getElementById('playerBar');
         const pipBtn = document.getElementById('pipBtn');
@@ -602,26 +623,6 @@
             resetView();
             searchInput.focus();
         }
-
-        // Secciones para la pantalla de Inicio: cada una es una fila propia con canciones,
-        // así la pantalla arranca llena de opciones en vez de depender de una sola búsqueda.
-        const HOME_SECTIONS = [
-            { query: 'rock classics', label: 'Rock clásico' },
-            { query: 'pop hits', label: 'Pop de hoy' },
-            { query: 'indie rock', label: 'Indie para descubrir' },
-            { query: 'hip hop hits', label: 'Hip Hop' },
-            { query: 'electronic music mix', label: 'Electrónica' },
-            { query: 'jazz classics', label: 'Jazz clásico' },
-            { query: 'latin hits', label: 'Latinos' },
-            { query: 'reggae essentials', label: 'Reggae' },
-            { query: 'metal classics', label: 'Metal' },
-            { query: '80s hits', label: 'Lo mejor de los 80' },
-            { query: '90s hits', label: 'Lo mejor de los 90' },
-            { query: 'acoustic covers', label: 'Acústico' },
-            { query: 'funk soul classics', label: 'Funk & Soul' },
-            { query: 'k-pop hits', label: 'K-Pop' },
-            { query: 'lofi beats', label: 'Lo-fi para concentrarte' }
-        ];
 
         // Mezcla liviana (Fisher-Yates) para que el orden tampoco sea siempre idéntico
         function shuffleArray(arr) {
