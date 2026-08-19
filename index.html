@@ -394,6 +394,9 @@
         .player-bar.floating .progress-bar span { display: block !important; }
 
         .player-bar.floating .player-utils { display: none !important; }
+        .player-bar.floating .controls { gap: 10px !important; }
+        .player-bar.floating #queueToggleBtn { font-size: 0.85rem; }
+        .player-bar.floating ~ .queue-panel { bottom: 0; }
 
         #pipBtn.active { color: var(--accent); opacity: 1 !important; }
         #queueToggleBtn { position: relative; }
@@ -590,6 +593,10 @@
                     <div class="orbit-spinner track-spinner on-light" style="--s:16px;--d:3px;"><i></i><i></i><i></i></div>
                 </button>
                 <button class="btn-control" onclick="nextSong(true)" title="Siguiente" aria-label="Siguiente"><i class="fas fa-step-forward"></i></button>
+                <button class="btn-control" id="queueToggleBtn" onclick="toggleQueuePanel()" title="Cola de reproducción" aria-label="Cola de reproducción">
+                    <i class="fas fa-list-ul"></i>
+                    <span class="queue-count-badge" id="queueCountBadge">0</span>
+                </button>
             </div>
             <div class="progress-bar">
                 <span id="currTime">0:00</span>
@@ -609,9 +616,6 @@
                 <input type="range" id="volumeSlider" class="volume-slider" min="0" max="1" step="0.01" value="0.8" oninput="setVolume(this.value)" aria-label="Volumen">
             </div>
             <i class="fas fa-compress-arrows-alt btn-control" id="pipBtn" onclick="toggleFloatingMode()" title="Modo Flotante" style="cursor:pointer; opacity: 0.7;"></i>
-            <i class="fas fa-list-ul btn-control" id="queueToggleBtn" onclick="toggleQueuePanel()" title="Cola de reproducción" style="cursor:pointer; opacity: 0.7;">
-                <span class="queue-count-badge" id="queueCountBadge">0</span>
-            </i>
         </div>
     </div>
 
