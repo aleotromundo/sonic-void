@@ -1,18 +1,18 @@
 // api/search.js
 export default async function handler(req, res) {
-  const { query, type } = req.query; // Recibe qué buscar y de dónde (youtube u openverse)
+  const { query, type } = req.query;
 
   if (!query) {
     return res.status(400).json({ error: 'Falta el término de búsqueda' });
   }
 
   try {
-    // --- BUSQUEDA EN YOUTUBE ---
+    // --- BUSQUEDA EN YOUTUBE (Lee la clave de Vercel) ---
     if (type === 'youtube') {
-      const apiKey = process.env.YOUTUBE_API_KEY; // ¡Aquí Vercel inyecta tu clave secreta!
+      const apiKey = process.env.YOUTUBE_API_KEY; 
       
       if (!apiKey) {
-        return res.status(500).json({ error: 'Falta la clave de YouTube en el servidor' });
+        return res.status(500).json({ error: 'Falta la clave YOUTUBE_API_KEY en Vercel' });
       }
 
       const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=20&q=${encodeURIComponent(query)}&key=${apiKey}`;
@@ -23,13 +23,13 @@ export default async function handler(req, res) {
       return res.status(200).json(data);
     } 
     
-    // --- BUSQUEDA EN OPENVERSE ---
+    // --- BUSQUEDA EN OPENVERSE (Lee las claves de Vercel) ---
     else if (type === 'openverse') {
       const clientId = process.env.OPENVERSE_CLIENT_ID;
       const clientSecret = process.env.OPENVERSE_CLIENT_SECRET;
 
       if (!clientId || !clientSecret) {
-        return res.status(500).json({ error: 'Faltan credenciales de Openverse' });
+        return res.status(500).json({ error: 'Faltan credenciales de Openverse en Vercel' });
       }
 
       // 1. Obtener Token
