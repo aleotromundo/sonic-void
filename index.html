@@ -603,16 +603,25 @@
             searchInput.focus();
         }
 
-        // Pool de búsquedas para que la pantalla de Inicio no muestre siempre lo mismo
-        const HOME_QUERIES = [
-            'rock classics', 'pop hits', 'indie rock', 'hip hop hits', 'electronic music mix',
-            'jazz classics', 'latin hits', 'reggae essentials', 'metal classics', '80s hits',
-            '90s hits', 'acoustic covers', 'funk soul classics', 'k-pop hits', 'lofi beats'
+        // Secciones para la pantalla de Inicio: cada una es una fila propia con canciones,
+        // así la pantalla arranca llena de opciones en vez de depender de una sola búsqueda.
+        const HOME_SECTIONS = [
+            { query: 'rock classics', label: 'Rock clásico' },
+            { query: 'pop hits', label: 'Pop de hoy' },
+            { query: 'indie rock', label: 'Indie para descubrir' },
+            { query: 'hip hop hits', label: 'Hip Hop' },
+            { query: 'electronic music mix', label: 'Electrónica' },
+            { query: 'jazz classics', label: 'Jazz clásico' },
+            { query: 'latin hits', label: 'Latinos' },
+            { query: 'reggae essentials', label: 'Reggae' },
+            { query: 'metal classics', label: 'Metal' },
+            { query: '80s hits', label: 'Lo mejor de los 80' },
+            { query: '90s hits', label: 'Lo mejor de los 90' },
+            { query: 'acoustic covers', label: 'Acústico' },
+            { query: 'funk soul classics', label: 'Funk & Soul' },
+            { query: 'k-pop hits', label: 'K-Pop' },
+            { query: 'lofi beats', label: 'Lo-fi para concentrarte' }
         ];
-
-        function pickHomeQuery() {
-            return HOME_QUERIES[Math.floor(Math.random() * HOME_QUERIES.length)];
-        }
 
         // Mezcla liviana (Fisher-Yates) para que el orden tampoco sea siempre idéntico
         function shuffleArray(arr) {
@@ -779,13 +788,66 @@
             performSmartSearch(mood);
         }
 
-        function resetView() {
+        // Arma la pantalla de Inicio con varias filas de música al mismo tiempo (canciones de
+        // distintos géneros + una fila de álbumes), para que nunca se vea vacía o con una sola búsqueda.
+        async function resetView() {
             searchQuery = ""; currentMood = null; channelFilter = null;
             searchInput.value = ""; searchClearBtn.classList.remove('show');
             document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.nav-links li').forEach(l => l.classList.remove('active'));
             document.querySelector('.nav-links li:first-child').classList.add('active');
-            performSmartSearch(pickHomeQuery());
+
+            const loader = document.getElementById('loader');
+            const container = document.getElementById('dynamicSections');
+            loader.style.display = 'flex';
+            container.innerHTML = '';
+
+            const shuffledSections = shuffleArray(HOME_SECTIONS);
+            const songSections = shuffledSections.slice(0, 5);
+            const albumSection = shuffledSections[5] || shuffledSections[0];
+
+            try {
+                const [songResults, albumResults] = await Promise.all([
+                    Promise.all(songSections.map(s => fetchYouTubeSearch(s.query, 'video', { maxResults: 10 }))),
+                    fetchYouTubeSearch(`${albumSection.query} álbum completo`, 'playlist', { maxResults: 8 })
+                ]);
+
+                currentList = [];
+                container.innerHTML = '';
+                let anyContent = false;
+
+                songSections.forEach((section, i) => {
+                    const songs = shuffleArray(songResults[i]);
+                    if (!songs.length) return;
+                    anyContent = true;
+                    const indexed = songs.map(song => {
+                        const item = { ...song, sourceIndex: currentList.length };
+                        currentList.push(item);
+                        return item;
+                    });
+                    renderGrid(indexed, section.label, "<i class='fas fa-music'></i>");
+                });
+
+                if (albumResults.length) {
+                    anyContent = true;
+                    const indexedAlbums = albumResults.map(album => {
+                        const item = { ...album, sourceIndex: currentList.length };
+                        currentList.push(item);
+                        return item;
+                    });
+                    renderGrid(indexedAlbums, `Álbumes: ${albumSection.label}`, "<i class='fas fa-compact-disc'></i>");
+                }
+
+                if (!anyContent) {
+                    await searchOpenverse(songSections[0] ? songSections[0].query : 'music');
+                }
+            } catch (e) {
+                console.warn("No se pudo cargar Inicio, probando Openverse...", e);
+                try { await searchOpenverse('music'); }
+                catch (e2) { renderEmptyState('No pudimos cargar Inicio', 'Probá recargar la página.'); }
+            } finally {
+                loader.style.display = 'none';
+            }
         }
 
         function showSection(section) {
