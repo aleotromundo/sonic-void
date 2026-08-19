@@ -251,6 +251,37 @@
         .volume-slider:hover::-webkit-slider-thumb { transform: scale(1.2); }
         .volume-slider::-moz-range-thumb { width: 12px; height: 12px; border-radius: 50%; background: #fff; border: none; cursor: pointer; }
 
+        /* --- SPINNER ORIGINAL DE CARGA DE PISTA (no confundir con el de búsqueda) --- */
+        .orbit-spinner {
+            --s: 18px; --d: 4px;
+            width: var(--s); height: var(--s); position: relative; flex-shrink: 0;
+        }
+        .orbit-spinner i {
+            position: absolute; width: var(--d); height: var(--d); border-radius: 50%;
+            top: 0; left: 50%; margin-left: calc(var(--d) / -2);
+            background: var(--accent);
+            transform-origin: calc(var(--d) / 2) calc(var(--s) / 2);
+            animation: orbitSpin 0.85s linear infinite;
+        }
+        .orbit-spinner i:nth-child(2) { background: var(--accent-2); animation-delay: -0.28s; }
+        .orbit-spinner i:nth-child(3) { background: #fff; animation-delay: -0.56s; }
+        .orbit-spinner.on-light i:nth-child(3) { background: #111; }
+        @keyframes orbitSpin { to { transform: rotate(360deg); } }
+
+        .btn-play { position: relative; }
+        .btn-play .track-spinner { display: none; }
+        .btn-play.loading .play-icon-wrap { visibility: hidden; }
+        .btn-play.loading .track-spinner { display: block; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+
+        .card-spinner {
+            display: none; position: absolute; inset: 0; z-index: 2;
+            align-items: center; justify-content: center; flex-direction: column; gap: 8px;
+            background: rgba(0,0,0,0.55); backdrop-filter: blur(1px);
+        }
+        .card-spinner span { font-size: 0.62rem; font-weight: 700; color: var(--text-gray); letter-spacing: 0.03em; text-transform: uppercase; }
+        .card.is-loading .card-spinner { display: flex; }
+        .card.is-loading .play-btn { opacity: 0; }
+
         #yt-player-container { display: none; }
 
         /* Toasts */
@@ -416,7 +447,13 @@
         <div class="player-center">
             <div class="controls">
                 <button class="btn-control" onclick="prevSong()" title="Anterior" aria-label="Anterior"><i class="fas fa-step-backward"></i></button>
-                <button class="btn-play" onclick="togglePlay()" id="playBtn" aria-label="Reproducir/Pausar"><i class="fas fa-play"></i></button>
+                <button class="btn-play" onclick="togglePlay()" id="playBtn" aria-label="Reproducir/Pausar">
+                    <span class="play-icon-wrap">
+                        <i class="fas fa-play" id="playIcon"></i>
+                        <i class="fas fa-pause" id="pauseIcon" style="display:none;"></i>
+                    </span>
+                    <div class="orbit-spinner track-spinner on-light" style="--s:16px;--d:3px;"><i></i><i></i><i></i></div>
+                </button>
                 <button class="btn-control" onclick="nextSong(true)" title="Siguiente" aria-label="Siguiente"><i class="fas fa-step-forward"></i></button>
             </div>
             <div class="progress-bar">
@@ -666,6 +703,7 @@
             list.forEach((song, idx) => {
                 const div = document.createElement('div');
                 div.className = 'card';
+                div.dataset.idx = idx;
                 div.style.animationDelay = `${Math.min(idx * 0.03, 0.5)}s`;
                 div.innerHTML = `
                     <div class="card-img-wrap">
@@ -673,6 +711,10 @@
                         <img src="${song.img || ''}" class="card-img" loading="lazy"
                              onload="this.classList.add('loaded')"
                              onerror="this.closest('.card-img-wrap').classList.add('img-error'); this.style.display='none';">
+                        <div class="card-spinner">
+                            <div class="orbit-spinner" style="--s:26px;--d:5px;"><i></i><i></i><i></i></div>
+                            <span>Cargando</span>
+                        </div>
                     </div>
                     <div class="play-btn"><i class="fas fa-play"></i></div>
                     <div class="card-title">${escapeHtml(song.title)}</div>
@@ -703,6 +745,7 @@
             updateFavButton(song);
             stopAll();
             updateMediaSession(song);
+            setTrackLoading(true, idx);
 
             if (song.type === 'yt') {
                 if (window.YT && window.YT.Player) initYTPlayer(song.url);
@@ -710,9 +753,12 @@
             } else {
                 audioEl.src = song.url;
                 applyVolume(parseFloat(document.getElementById('volumeSlider').value));
-                audioEl.play().then(() => { isPlaying = true; updateIcon(); startProgress(audioEl); }).catch(e => { console.error(e); showToast('No se pudo reproducir esta pista', 'fa-triangle-exclamation'); });
+                audioEl.play().catch(e => { console.error(e); setTrackLoading(false); showToast('No se pudo reproducir esta pista', 'fa-triangle-exclamation'); });
                 audioEl.ontimeupdate = () => updateProgress(audioEl.currentTime, audioEl.duration);
                 audioEl.onended = () => nextSong();
+                audioEl.onwaiting = () => setTrackLoading(true, currentIndex);
+                audioEl.onplaying = () => { isPlaying = true; updateIcon(); setTrackLoading(false); if (!progressInterval) startProgress(audioEl); };
+                audioEl.onerror = () => { setTrackLoading(false); showToast('No se pudo reproducir esta pista', 'fa-triangle-exclamation'); };
             }
         }
 
@@ -721,20 +767,25 @@
             ytPlayer = new YT.Player('yt-player', {
                 height: '0', width: '0', videoId: videoId,
                 playerVars: { 'autoplay': 1, 'controls': 0, 'enablejsapi': 1, 'origin': window.location.origin },
-                events: { 'onReady': onYTReady, 'onStateChange': onYTStateChange }
+                events: { 'onReady': onYTReady, 'onStateChange': onYTStateChange, 'onError': onYTError }
             });
         }
 
         function onYTReady() {
-            isPlaying = true; updateIcon(); startProgress(ytPlayer);
             const v = parseFloat(document.getElementById('volumeSlider').value);
             if (ytPlayer.setVolume) ytPlayer.setVolume(v * 100);
         }
         function onYTStateChange(event) {
-            if (event.data === YT.PlayerState.PLAYING) { isPlaying = true; if (!progressInterval) startProgress(ytPlayer); }
-            else if (event.data === YT.PlayerState.PAUSED) isPlaying = false;
-            else if (event.data === YT.PlayerState.ENDED) nextSong();
+            if (event.data === YT.PlayerState.PLAYING) { isPlaying = true; setTrackLoading(false); if (!progressInterval) startProgress(ytPlayer); }
+            else if (event.data === YT.PlayerState.PAUSED) { isPlaying = false; }
+            else if (event.data === YT.PlayerState.BUFFERING) { setTrackLoading(true, currentIndex); }
+            else if (event.data === YT.PlayerState.ENDED) { nextSong(); }
             updateIcon();
+            updatePlaybackState();
+        }
+        function onYTError() {
+            setTrackLoading(false);
+            showToast('No se pudo cargar este video', 'fa-triangle-exclamation');
         }
 
         function togglePlay() {
@@ -840,7 +891,20 @@
             });
         }
 
-        function updateIcon() { document.getElementById('playBtn').innerHTML = isPlaying ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>'; }
+        function updateIcon() {
+            document.getElementById('playIcon').style.display = isPlaying ? 'none' : 'inline';
+            document.getElementById('pauseIcon').style.display = isPlaying ? 'inline' : 'none';
+        }
+
+        // --- SPINNER DE CARGA DE PISTA ---
+        function setTrackLoading(loading, idx) {
+            document.getElementById('playBtn').classList.toggle('loading', loading);
+            document.querySelectorAll('.card.is-loading').forEach(c => c.classList.remove('is-loading'));
+            if (loading && idx != null && idx !== -1) {
+                const card = document.querySelector(`.card[data-idx="${idx}"]`);
+                if (card) card.classList.add('is-loading');
+            }
+        }
         function format(sec) { if (!sec || isNaN(sec)) return "0:00"; const m = Math.floor(sec / 60); const s = Math.floor(sec % 60); return `${m}:${s < 10 ? '0' + s : s}`; }
 
         function toggleFavorite() {
