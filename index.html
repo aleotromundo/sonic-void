@@ -174,6 +174,13 @@
         .card-desc.artist-link, .song-row-artist.artist-link { cursor: pointer; width: fit-content; }
         .card-desc.artist-link:hover, .song-row-artist.artist-link:hover { color: var(--accent-2); text-decoration: underline; }
         .song-row-play { color: var(--accent); font-size: 0.9rem; }
+        .song-row-actions { display: flex; align-items: center; gap: 14px; }
+        .song-row-addq {
+            background: none; border: 1px solid var(--border-soft); color: var(--text-gray); width: 30px; height: 30px;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; cursor: pointer;
+            transition: background .2s var(--ease), color .2s var(--ease), border-color .2s var(--ease), transform .15s var(--ease);
+        }
+        .song-row-addq:hover { background: var(--accent); border-color: var(--accent); color: black; transform: scale(1.08); }
         @media (max-width: 560px) { .results-view-switcher { align-items: flex-start; flex-direction: column; } .song-row { grid-template-columns: 28px 44px minmax(0, 1fr) auto; gap: 10px; padding: 9px 10px; } .song-row-img { width: 44px; height: 44px; } }
 
         .card {
@@ -211,6 +218,15 @@
         }
         .card:hover .play-btn { opacity: 1; transform: translateY(0); }
         .card:hover .play-btn:hover { background-color: var(--accent-hover); transform: scale(1.08); box-shadow: 0 6px 20px var(--accent-glow); }
+
+        .card-addq {
+            position: absolute; right: 20px; bottom: 140px; width: 34px; height: 34px; border-radius: 50%;
+            background: rgba(0,0,0,0.55); border: 1px solid rgba(255,255,255,0.18); color: white;
+            display: flex; align-items: center; justify-content: center; font-size: 0.8rem; cursor: pointer;
+            opacity: 0; transform: translateY(10px); transition: .3s var(--ease); backdrop-filter: blur(4px);
+        }
+        .card:hover .card-addq { opacity: 1; transform: translateY(0); }
+        .card:hover .card-addq:hover { background: var(--accent); border-color: var(--accent); color: black; transform: scale(1.08); }
 
         /* Loader / empty state */
         .loader-wrap { display: none; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 60px 20px; color: var(--text-gray); }
@@ -380,6 +396,88 @@
         .player-bar.floating .player-utils { display: none !important; }
 
         #pipBtn.active { color: var(--accent); opacity: 1 !important; }
+        #queueToggleBtn { position: relative; }
+        #queueToggleBtn.active { color: var(--accent); opacity: 1 !important; }
+        .queue-count-badge {
+            position: absolute; top: -8px; right: -10px; background: var(--accent); color: black;
+            font-size: 0.6rem; font-weight: 800; min-width: 16px; height: 16px; border-radius: 8px;
+            display: none; align-items: center; justify-content: center; padding: 0 4px; line-height: 1;
+        }
+        .queue-count-badge.show { display: flex; }
+
+        /* --- PANEL DE COLA DE REPRODUCCIÓN --- */
+        .queue-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 190; opacity: 0; pointer-events: none;
+            transition: opacity .25s var(--ease);
+        }
+        .queue-overlay.show { opacity: 1; pointer-events: auto; }
+
+        .queue-panel {
+            position: fixed; top: 0; right: 0; bottom: var(--player-height); width: 360px; max-width: 88vw;
+            background: var(--bg-card); border-left: 1px solid var(--border-soft); z-index: 200;
+            display: flex; flex-direction: column; transform: translateX(100%);
+            transition: transform .3s var(--ease); box-shadow: -12px 0 30px rgba(0,0,0,0.4);
+        }
+        .queue-panel.open { transform: translateX(0); }
+
+        .queue-panel-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 18px 18px 6px; }
+        .queue-panel-title { font-family: 'Sora', sans-serif; font-size: 1.05rem; font-weight: 800; display: flex; align-items: center; gap: 10px; }
+        .queue-panel-title i { color: var(--accent); }
+        .queue-panel-actions { display: flex; align-items: center; gap: 8px; }
+        .queue-clear-btn {
+            background: none; border: 1px solid var(--border-soft); color: var(--text-gray); font-size: 0.72rem;
+            font-weight: 800; padding: 6px 10px; border-radius: 20px; cursor: pointer; display: flex; align-items: center; gap: 6px;
+            transition: background .2s var(--ease), color .2s var(--ease), border-color .2s var(--ease);
+        }
+        .queue-clear-btn:hover { background: #e74c3c; border-color: #e74c3c; color: white; }
+        .queue-close-btn { background: none; border: none; color: var(--text-gray); font-size: 1rem; cursor: pointer; width: 30px; height: 30px; border-radius: 50%; }
+        .queue-close-btn:hover { background: var(--bg-hover); color: white; }
+        .queue-panel-sub { padding: 0 18px 12px; color: var(--text-dim); font-size: 0.76rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; }
+
+        .queue-list { flex: 1; overflow-y: auto; padding: 4px 12px 12px; display: flex; flex-direction: column; gap: 6px; }
+        .queue-empty { text-align: center; padding: 50px 20px; color: var(--text-dim); }
+        .queue-empty i { font-size: 1.8rem; margin-bottom: 12px; display: block; color: #3a3a3a; }
+        .queue-empty p { font-size: 0.85rem; font-weight: 600; }
+
+        .queue-row-item {
+            display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 8px;
+            border: 1px solid transparent; cursor: pointer; transition: background .18s var(--ease), border-color .18s var(--ease);
+            background: rgba(255,255,255,0.02);
+        }
+        .queue-row-item:hover { background: var(--bg-hover); }
+        .queue-row-item.playing { border-color: rgba(29,185,84,0.4); background: rgba(29,185,84,0.08); }
+        .queue-row-item.dragging { opacity: 0.35; }
+        .queue-row-item.drag-over-top { box-shadow: inset 0 2px 0 var(--accent); }
+        .queue-row-item.drag-over-bottom { box-shadow: inset 0 -2px 0 var(--accent); }
+        .queue-drag-handle { color: var(--text-dim); font-size: 0.85rem; cursor: grab; flex-shrink: 0; padding: 4px; }
+        .queue-drag-handle:active { cursor: grabbing; }
+        .queue-row-img { width: 42px; height: 42px; border-radius: 5px; object-fit: cover; background: #222; flex-shrink: 0; }
+        .queue-row-info { min-width: 0; flex: 1; }
+        .queue-row-title { font-size: 0.82rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .queue-row-item.playing .queue-row-title { color: var(--accent); }
+        .queue-row-artist { font-size: 0.72rem; color: var(--text-gray); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+        .queue-playing-icon { color: var(--accent); font-size: 0.8rem; flex-shrink: 0; }
+        .queue-row-remove {
+            background: none; border: none; color: var(--text-dim); font-size: 0.8rem; cursor: pointer; flex-shrink: 0;
+            width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            transition: background .18s var(--ease), color .18s var(--ease);
+        }
+        .queue-row-remove:hover { background: #e74c3c; color: white; }
+
+        .queue-drop-trash {
+            display: none; align-items: center; justify-content: center; gap: 10px; margin: 10px 12px 14px; padding: 14px;
+            border: 2px dashed var(--text-dim); border-radius: 10px; color: var(--text-dim); font-size: 0.78rem; font-weight: 700;
+            transition: border-color .2s var(--ease), color .2s var(--ease), background .2s var(--ease);
+        }
+        .queue-drop-trash.show { display: flex; }
+        .queue-drop-trash.drag-hover { border-color: #e74c3c; color: #e74c3c; background: rgba(231,76,60,0.08); }
+
+        .queue-loading-hint { display: none; align-items: center; justify-content: center; gap: 8px; padding: 10px; color: var(--text-dim); font-size: 0.74rem; font-weight: 700; }
+        .queue-loading-hint.show { display: flex; }
+
+        @media (max-width: 768px) {
+            .queue-panel { bottom: 70px; width: 100%; max-width: 100%; }
+        }
 
         /* --- RESPONSIVE / TABLET / MOBILE --- */
         @media (max-width: 768px) {
@@ -511,7 +609,26 @@
                 <input type="range" id="volumeSlider" class="volume-slider" min="0" max="1" step="0.01" value="0.8" oninput="setVolume(this.value)" aria-label="Volumen">
             </div>
             <i class="fas fa-compress-arrows-alt btn-control" id="pipBtn" onclick="toggleFloatingMode()" title="Modo Flotante" style="cursor:pointer; opacity: 0.7;"></i>
+            <i class="fas fa-list-ul btn-control" id="queueToggleBtn" onclick="toggleQueuePanel()" title="Cola de reproducción" style="cursor:pointer; opacity: 0.7;">
+                <span class="queue-count-badge" id="queueCountBadge">0</span>
+            </i>
         </div>
+    </div>
+
+    <!-- PANEL DE COLA DE REPRODUCCIÓN -->
+    <div class="queue-overlay" id="queueOverlay" onclick="closeQueuePanel()"></div>
+    <div class="queue-panel" id="queuePanel">
+        <div class="queue-panel-header">
+            <div class="queue-panel-title"><i class="fas fa-list-ul"></i> Cola de reproducción</div>
+            <div class="queue-panel-actions">
+                <button type="button" class="queue-clear-btn" onclick="clearQueue()" title="Vaciar toda la cola"><i class="fas fa-trash"></i> Vaciar</button>
+                <button type="button" class="queue-close-btn" onclick="closeQueuePanel()" aria-label="Cerrar cola"><i class="fas fa-xmark"></i></button>
+            </div>
+        </div>
+        <div class="queue-panel-sub" id="queueSub">La cola está vacía</div>
+        <div class="queue-list" id="queueList"></div>
+        <div class="queue-loading-hint" id="queueLoadingHint"><div class="loader-spinner" style="width:16px;height:16px;border-width:2px;"></div> Sumando más canciones...</div>
+        <div class="queue-drop-trash" id="queueTrash"><i class="fas fa-trash"></i> Soltá aquí para quitarla de la cola</div>
     </div>
 
     <div id="yt-player-container"></div>
@@ -526,8 +643,20 @@
 
         let currentList = [];
         let favorites = JSON.parse(localStorage.getItem('nowarfy_favs')) || [];
-        let currentIndex = -1;
+        let currentIndex = -1; // índice dentro de "queue" (cola de reproducción persistente)
         let isPlaying = false;
+
+        // --- COLA DE REPRODUCCIÓN PERSISTENTE (radio automática) ---
+        const QUEUE_BATCH = 22;       // canciones que se suman en cada ronda de autogeneración
+        const QUEUE_LOW_WATER = 5;    // cuando quedan <= a esto por delante, se pide otra ronda
+        let queue = [];                // lista completa de la cola actual
+        let queueSeenKeys = new Set(); // para no repetir canciones dentro de la cola
+        let queueIdCounter = 0;        // id incremental único por ítem de la cola (sobrevive a reordenes/borrados)
+        let currentPlayingQid = null;  // _qid del ítem que está sonando ahora
+        let currentSourceIdx = null;   // idx en currentList del resultado desde donde se eligió la canción actual (para el spinner)
+        let queueRound = 0;            // 0 = ronda "mismo artista", 1+ = rondas "artistas similares"
+        let queueFetching = false;     // evita pedidos de autogeneración duplicados
+        let dragSrcQid = null;         // _qid del ítem que se está arrastrando en el panel de cola
         let searchQuery = "";
         let currentMood = null;
         let searchTimeout = null;
@@ -577,6 +706,9 @@
         loadYouTubeAPI();
         setupProgressDrag();
         setupKeyboardShortcuts();
+        restoreQueueFromStorage();
+        setupQueueTrashDropzone();
+        renderQueue();
 
         // --- LIMPIEZA DE CONSOLA ---
         window.onerror = function(msg, url, lineNo, columnNo, error) {
@@ -956,8 +1088,15 @@
                         <span class="song-row-title">${escapeHtml(song.title)}</span>
                         <span class="song-row-artist${artistClickable ? ' artist-link' : ''}">${escapeHtml(song.artist)}</span>
                     </span>
-                    <i class="fas fa-play song-row-play" aria-hidden="true"></i>`;
-                row.onclick = () => play(song.sourceIndex ?? idx);
+                    <span class="song-row-actions">
+                        <button type="button" class="song-row-addq" title="Agregar a la cola" aria-label="Agregar a la cola"><i class="fas fa-list"></i></button>
+                        <i class="fas fa-play song-row-play" aria-hidden="true"></i>
+                    </span>`;
+                row.onclick = () => selectSong(song, song.sourceIndex ?? idx);
+                row.querySelector('.song-row-addq').onclick = (e) => {
+                    e.stopPropagation();
+                    addToQueue(song);
+                };
                 if (artistClickable) {
                     row.querySelector('.song-row-artist').onclick = (e) => {
                         e.stopPropagation();
@@ -995,10 +1134,15 @@
                             <span>Cargando</span>
                         </div>
                     </div>
+                    <button type="button" class="card-addq" title="Agregar a la cola" aria-label="Agregar a la cola"><i class="fas fa-list"></i></button>
                     <div class="play-btn"><i class="fas fa-play"></i></div>
                     <div class="card-title">${escapeHtml(song.title)}</div>
                     <div class="card-desc${artistClickable ? ' artist-link' : ''}">${escapeHtml(song.artist)}</div>`;
-                div.onclick = () => play(song.sourceIndex ?? idx);
+                div.onclick = () => selectSong(song, song.sourceIndex ?? idx);
+                div.querySelector('.card-addq').onclick = (e) => {
+                    e.stopPropagation();
+                    addToQueue(song);
+                };
                 if (artistClickable) {
                     div.querySelector('.card-desc').onclick = (e) => {
                         e.stopPropagation();
@@ -1019,9 +1163,42 @@
             window.onYouTubeIframeAPIReady = () => console.log("YT Engine Ready");
         }
 
-        function play(idx) {
+        // --- CLAVE única de canción (para no repetir en la cola) ---
+        function songKey(song) { return `${(song.title || '').toLowerCase().trim()}|${(song.artist || '').toLowerCase().trim()}`; }
+        function withQid(song) { return { ...song, _qid: ++queueIdCounter }; }
+
+        // Elegir una canción NUEVA desde resultados/tarjetas: arranca una cola nueva de golpe,
+        // reemplazando la anterior, y dispara la autogeneración (22 del mismo artista, luego similares...).
+        function selectSong(song, sourceIdx) {
+            const q = withQid(song);
+            queue = [q];
+            queueSeenKeys = new Set([songKey(q)]);
+            queueRound = 0;
+            persistQueue();
+            renderQueue();
+            playQueueAt(0, { sourceIdx });
+        }
+
+        // Agregar una canción a la cola actual sin interrumpir lo que está sonando.
+        function addToQueue(song) {
+            const k = songKey(song);
+            if (queueSeenKeys.has(k)) { showToast('Ya está en la cola', 'fa-circle-info'); return; }
+            const q = withQid(song);
+            queueSeenKeys.add(k);
+            queue.push(q);
+            persistQueue();
+            renderQueue();
+            showToast('Añadido a la cola', 'fa-list');
+            if (currentPlayingQid == null) playQueueAt(queue.length - 1);
+        }
+
+        // Reproduce el ítem "idx" de la cola (fuente de verdad para next/prev/togglePlay).
+        function playQueueAt(idx, options = {}) {
+            if (idx < 0 || idx >= queue.length) return;
             currentIndex = idx;
-            const song = currentList[idx];
+            const song = queue[idx];
+            currentPlayingQid = song._qid;
+            currentSourceIdx = options.sourceIdx ?? null;
             document.getElementById('currTitle').innerText = song.title;
             document.getElementById('currArtist').innerText = song.artist;
             const img = document.getElementById('currentImg');
@@ -1030,7 +1207,9 @@
             updateFavButton(song);
             stopAll();
             updateMediaSession(song);
-            setTrackLoading(true, idx);
+            setTrackLoading(true, currentSourceIdx);
+            persistQueue();
+            renderQueue();
 
             if (song.type === 'yt') {
                 if (window.YT && window.YT.Player) initYTPlayer(song.url, song.isPlaylist);
@@ -1041,10 +1220,254 @@
                 audioEl.play().catch(e => { console.error(e); setTrackLoading(false); showToast('No se pudo reproducir esta pista', 'fa-triangle-exclamation'); });
                 audioEl.ontimeupdate = () => updateProgress(audioEl.currentTime, audioEl.duration);
                 audioEl.onended = () => nextSong();
-                audioEl.onwaiting = () => setTrackLoading(true, currentIndex);
+                audioEl.onwaiting = () => setTrackLoading(true, currentSourceIdx);
                 audioEl.onplaying = () => { isPlaying = true; updateIcon(); setTrackLoading(false); if (!progressInterval) startProgress(audioEl); };
                 audioEl.onerror = () => { setTrackLoading(false); showToast('No se pudo reproducir esta pista', 'fa-triangle-exclamation'); };
             }
+
+            growQueueIfNeeded();
+        }
+
+        // --- AUTOGENERACIÓN DE LA COLA ---
+        // Ronda 0: hasta 22 canciones del mismo artista (sin repetir).
+        // Ronda 1+: hasta 22 canciones de artistas similares, y así sucesivamente sin fin.
+        async function fetchSameArtistTracks(seedSong, count) {
+            if (!seedSong || seedSong.type !== 'yt' || !seedSong.artist) return [];
+            let raw = [];
+            if (seedSong.channelId) {
+                raw = await fetchYouTubeSearch(seedSong.artist, 'video', { channelId: seedSong.channelId, maxResults: Math.min(count, 20) });
+            }
+            if (raw.length < count) {
+                const extra = await fetchYouTubeSearch(seedSong.artist, 'video', { maxResults: count });
+                const artistLower = seedSong.artist.toLowerCase();
+                const filtered = extra.filter(s => (s.artist || '').toLowerCase().includes(artistLower) || artistLower.includes((s.artist || '').toLowerCase()));
+                raw = raw.concat(filtered);
+            }
+            return raw.slice(0, count);
+        }
+
+        async function fetchSimilarArtistTracks(seedSong, count) {
+            if (!seedSong || !seedSong.artist) return [];
+            const artist = seedSong.artist;
+            try {
+                const [radio, related] = await Promise.all([
+                    fetchYouTubeSearch(`${artist} radio mix`, 'video', { maxResults: Math.max(6, Math.ceil(count * 0.7)) }),
+                    fetchYouTubeSearch(`artistas similares a ${artist}`, 'video', { maxResults: Math.max(6, Math.ceil(count * 0.6)) })
+                ]);
+                const artistLower = artist.toLowerCase();
+                const merged = shuffleArray([...radio, ...related]).filter(s => (s.artist || '').toLowerCase() !== artistLower);
+                return merged.slice(0, count);
+            } catch (e) { return []; }
+        }
+
+        async function growQueueIfNeeded() {
+            if (queueFetching || queue.length === 0) return;
+            const idx = queue.findIndex(s => s._qid === currentPlayingQid);
+            const remaining = queue.length - (idx + 1);
+            if (remaining > QUEUE_LOW_WATER) return;
+            const seed = queue[idx] || queue[queue.length - 1];
+            if (!seed) return;
+            queueFetching = true;
+            toggleQueueLoadingHint(true);
+            try {
+                let added = [];
+                if (queueRound === 0) {
+                    added = await fetchSameArtistTracks(seed, QUEUE_BATCH);
+                    queueRound = 1;
+                    if (added.length < 6) added = added.concat(await fetchSimilarArtistTracks(seed, QUEUE_BATCH - added.length));
+                } else {
+                    added = await fetchSimilarArtistTracks(seed, QUEUE_BATCH);
+                }
+                added = added
+                    .filter(s => s && s.url)
+                    .filter(s => { const k = songKey(s); if (queueSeenKeys.has(k)) return false; queueSeenKeys.add(k); return true; })
+                    .map(withQid);
+                if (added.length) {
+                    queue = queue.concat(added);
+                    persistQueue();
+                    renderQueue();
+                }
+            } catch (e) { console.warn('No se pudo ampliar la cola automáticamente', e); }
+            finally { queueFetching = false; toggleQueueLoadingHint(false); }
+        }
+
+        function toggleQueueLoadingHint(show) {
+            const hint = document.getElementById('queueLoadingHint');
+            if (hint) hint.classList.toggle('show', show);
+        }
+
+        // --- PERSISTENCIA DE LA COLA (localStorage) ---
+        function persistQueue() {
+            try {
+                localStorage.setItem('nowarfy_queue', JSON.stringify(queue));
+                localStorage.setItem('nowarfy_queue_qid', currentPlayingQid == null ? '' : String(currentPlayingQid));
+                localStorage.setItem('nowarfy_queue_round', String(queueRound));
+            } catch (e) { /* almacenamiento no disponible */ }
+        }
+
+        function restoreQueueFromStorage() {
+            try {
+                const savedQueue = JSON.parse(localStorage.getItem('nowarfy_queue'));
+                if (Array.isArray(savedQueue) && savedQueue.length) {
+                    queue = savedQueue;
+                    queueSeenKeys = new Set(queue.map(songKey));
+                    queueIdCounter = queue.reduce((max, s) => Math.max(max, s._qid || 0), 0);
+                    queueRound = parseInt(localStorage.getItem('nowarfy_queue_round'), 10) || 0;
+                    const savedQid = localStorage.getItem('nowarfy_queue_qid');
+                    const qid = savedQid ? parseInt(savedQid, 10) : null;
+                    const idx = queue.findIndex(s => s._qid === qid);
+                    if (idx !== -1) {
+                        currentIndex = idx;
+                        currentPlayingQid = qid;
+                        const song = queue[idx];
+                        document.getElementById('currTitle').innerText = song.title;
+                        document.getElementById('currArtist').innerText = song.artist;
+                        const img = document.getElementById('currentImg');
+                        if (song.img) { img.src = song.img; img.style.display = 'block'; }
+                        updateFavButton(song);
+                    }
+                }
+            } catch (e) { /* nada que restaurar */ }
+        }
+
+        // --- PANEL DE COLA: render, drag&drop, borrado ---
+        function toggleQueuePanel() {
+            const panel = document.getElementById('queuePanel');
+            const overlay = document.getElementById('queueOverlay');
+            const open = panel.classList.toggle('open');
+            overlay.classList.toggle('show', open);
+            document.getElementById('queueToggleBtn').classList.toggle('active', open);
+            if (open) renderQueue();
+        }
+        function closeQueuePanel() {
+            document.getElementById('queuePanel').classList.remove('open');
+            document.getElementById('queueOverlay').classList.remove('show');
+            document.getElementById('queueToggleBtn').classList.remove('active');
+        }
+
+        function clearQueue() {
+            if (queue.length === 0) return;
+            stopAll();
+            queue = [];
+            queueSeenKeys = new Set();
+            currentPlayingQid = null;
+            currentIndex = -1;
+            currentSourceIdx = null;
+            queueRound = 0;
+            persistQueue();
+            renderQueue();
+            document.getElementById('currTitle').innerText = 'Selecciona una canción';
+            document.getElementById('currArtist').innerText = '...';
+            document.getElementById('currentImg').style.display = 'none';
+            showToast('Cola vaciada', 'fa-trash');
+        }
+
+        function removeFromQueue(qid) {
+            const idx = queue.findIndex(s => s._qid === qid);
+            if (idx === -1) return;
+            queue.splice(idx, 1);
+            persistQueue();
+            renderQueue();
+            showToast('Quitada de la cola', 'fa-xmark');
+        }
+
+        function reorderQueue(srcQid, targetQid, insertBefore) {
+            const srcIdx = queue.findIndex(s => s._qid === srcQid);
+            if (srcIdx === -1) return;
+            const [item] = queue.splice(srcIdx, 1);
+            let targetIdx = queue.findIndex(s => s._qid === targetQid);
+            if (targetIdx === -1) targetIdx = queue.length;
+            queue.splice(insertBefore ? targetIdx : targetIdx + 1, 0, item);
+            persistQueue();
+            renderQueue();
+        }
+
+        function setupQueueTrashDropzone() {
+            const trash = document.getElementById('queueTrash');
+            if (!trash) return;
+            trash.addEventListener('dragover', (e) => { e.preventDefault(); trash.classList.add('drag-hover'); });
+            trash.addEventListener('dragleave', () => trash.classList.remove('drag-hover'));
+            trash.addEventListener('drop', (e) => {
+                e.preventDefault();
+                trash.classList.remove('drag-hover');
+                if (dragSrcQid != null) removeFromQueue(dragSrcQid);
+            });
+        }
+
+        function renderQueue() {
+            currentIndex = queue.findIndex(s => s._qid === currentPlayingQid);
+            const list = document.getElementById('queueList');
+            const sub = document.getElementById('queueSub');
+            const badge = document.getElementById('queueCountBadge');
+            if (!list) return;
+
+            if (badge) { badge.textContent = String(queue.length); badge.classList.toggle('show', queue.length > 0); }
+            if (sub) sub.textContent = queue.length ? `${queue.length} canción${queue.length === 1 ? '' : 'es'} en la cola` : 'La cola está vacía';
+
+            list.innerHTML = '';
+            if (queue.length === 0) {
+                list.innerHTML = `<div class="queue-empty"><i class="fas fa-compact-disc"></i><p>Elegí una canción para armar tu cola automática: 22 del mismo artista y después más de artistas similares.</p></div>`;
+                document.getElementById('queueTrash').classList.remove('show');
+                return;
+            }
+
+            queue.forEach((song, idx) => {
+                const row = document.createElement('div');
+                const isPlayingRow = song._qid === currentPlayingQid;
+                row.className = 'queue-row-item' + (isPlayingRow ? ' playing' : '');
+                row.draggable = true;
+                row.dataset.qid = String(song._qid);
+                row.innerHTML = `
+                    <i class="fas fa-grip-lines queue-drag-handle" title="Arrastrar para reordenar o quitar"></i>
+                    <img src="${song.img || ''}" class="queue-row-img" loading="lazy" alt="" onerror="this.style.visibility='hidden';">
+                    <div class="queue-row-info">
+                        <div class="queue-row-title">${escapeHtml(song.title)}</div>
+                        <div class="queue-row-artist">${escapeHtml(song.artist)}</div>
+                    </div>
+                    ${isPlayingRow ? '<i class="fas fa-volume-up queue-playing-icon" title="Sonando ahora"></i>' : ''}
+                    <button type="button" class="queue-row-remove" title="Quitar de la cola" aria-label="Quitar de la cola"><i class="fas fa-xmark"></i></button>`;
+
+                row.addEventListener('click', (e) => {
+                    if (e.target.closest('.queue-row-remove') || e.target.closest('.queue-drag-handle')) return;
+                    playQueueAt(idx);
+                });
+                row.querySelector('.queue-row-remove').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    removeFromQueue(song._qid);
+                });
+                row.addEventListener('dragstart', (e) => {
+                    dragSrcQid = song._qid;
+                    row.classList.add('dragging');
+                    e.dataTransfer.effectAllowed = 'move';
+                    try { e.dataTransfer.setData('text/plain', String(song._qid)); } catch (err) { /* Safari */ }
+                    document.getElementById('queueTrash').classList.add('show');
+                });
+                row.addEventListener('dragend', () => {
+                    row.classList.remove('dragging');
+                    document.querySelectorAll('.queue-row-item.drag-over-top, .queue-row-item.drag-over-bottom').forEach(r => r.classList.remove('drag-over-top', 'drag-over-bottom'));
+                    document.getElementById('queueTrash').classList.remove('show', 'drag-hover');
+                    dragSrcQid = null;
+                });
+                row.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    if (dragSrcQid == null || dragSrcQid === song._qid) return;
+                    const rect = row.getBoundingClientRect();
+                    const before = (e.clientY - rect.top) < rect.height / 2;
+                    row.classList.toggle('drag-over-top', before);
+                    row.classList.toggle('drag-over-bottom', !before);
+                });
+                row.addEventListener('dragleave', () => row.classList.remove('drag-over-top', 'drag-over-bottom'));
+                row.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    row.classList.remove('drag-over-top', 'drag-over-bottom');
+                    if (dragSrcQid == null || dragSrcQid === song._qid) return;
+                    const rect = row.getBoundingClientRect();
+                    const before = (e.clientY - rect.top) < rect.height / 2;
+                    reorderQueue(dragSrcQid, song._qid, before);
+                });
+
+                list.appendChild(row);
+            });
         }
 
         function initYTPlayer(resourceId, isPlaylist = false) {
@@ -1084,8 +1507,10 @@
         }
 
         function togglePlay() {
-            if (currentIndex === -1) return;
-            const song = currentList[currentIndex];
+            if (currentIndex === -1 || !queue[currentIndex]) return;
+            // Si venimos de restaurar la cola guardada y todavía no se cargó nada en el reproductor, arrancarla.
+            if (!ytPlayer && !audioEl.src) { playQueueAt(currentIndex); return; }
+            const song = queue[currentIndex];
             if (song.type === 'yt') {
                 if (ytPlayer) { if (isPlaying) ytPlayer.pauseVideo(); else ytPlayer.playVideo(); isPlaying = !isPlaying; }
             } else {
@@ -1095,8 +1520,21 @@
             updatePlaybackState();
         }
 
-        function nextSong(manual = false) { if (manual && shuffleMode) { play(Math.floor(Math.random() * currentList.length)); return; } let next = currentIndex + 1; if (next >= currentList.length) next = 0; play(next); }
-        function prevSong() { let prev = currentIndex - 1; if (prev < 0) prev = currentList.length - 1; play(prev); }
+        function nextSong(manual = false) {
+            if (queue.length === 0) return;
+            if (manual && shuffleMode) { playQueueAt(Math.floor(Math.random() * queue.length)); return; }
+            const idx = queue.findIndex(s => s._qid === currentPlayingQid);
+            let next = idx + 1;
+            if (next >= queue.length) next = 0;
+            playQueueAt(next);
+        }
+        function prevSong() {
+            if (queue.length === 0) return;
+            const idx = queue.findIndex(s => s._qid === currentPlayingQid);
+            let prev = idx - 1;
+            if (prev < 0) prev = queue.length - 1;
+            playQueueAt(prev);
+        }
         function stopAll() { if (ytPlayer) { ytPlayer.stopVideo(); ytPlayer.destroy(); ytPlayer = null; } audioEl.pause(); if (progressInterval) clearInterval(progressInterval); isPlaying = false; updateIcon(); progFill.style.width = '0%'; progThumb.style.left = '0%'; }
 
         function startProgress(source) {
@@ -1128,23 +1566,23 @@
         }
 
         function getDuration() {
-            if (currentIndex === -1) return 0;
-            const song = currentList[currentIndex];
+            if (currentIndex === -1 || !queue[currentIndex]) return 0;
+            const song = queue[currentIndex];
             if (song.type === 'yt' && ytPlayer && ytPlayer.getDuration) return ytPlayer.getDuration();
             if (song.type === 'mp3') return audioEl.duration || 0;
             return 0;
         }
 
         function commitSeek(pct) {
-            if (currentIndex === -1) return;
-            const song = currentList[currentIndex];
+            if (currentIndex === -1 || !queue[currentIndex]) return;
+            const song = queue[currentIndex];
             if (song.type === 'yt' && ytPlayer) { const d = ytPlayer.getDuration(); if (d) ytPlayer.seekTo(d * pct, true); }
             else if (song.type === 'mp3' && audioEl.duration) { audioEl.currentTime = audioEl.duration * pct; }
         }
 
         function seekBy(deltaSeconds) {
-            if (currentIndex === -1) return;
-            const song = currentList[currentIndex];
+            if (currentIndex === -1 || !queue[currentIndex]) return;
+            const song = queue[currentIndex];
             if (song.type === 'yt' && ytPlayer) {
                 const t = Math.max(0, ytPlayer.getCurrentTime() + deltaSeconds);
                 ytPlayer.seekTo(t, true);
@@ -1203,8 +1641,8 @@
         function format(sec) { if (!sec || isNaN(sec)) return "0:00"; const m = Math.floor(sec / 60); const s = Math.floor(sec % 60); return `${m}:${s < 10 ? '0' + s : s}`; }
 
         function toggleFavorite() {
-            if (currentIndex === -1) return;
-            const song = currentList[currentIndex];
+            if (currentIndex === -1 || !queue[currentIndex]) return;
+            const song = queue[currentIndex];
             const idx = favorites.findIndex(f => f.title === song.title && f.artist === song.artist);
             if (idx >= 0) { favorites.splice(idx, 1); showToast('Quitado de favoritos', 'fa-heart-crack'); }
             else { favorites.push(song); showToast('Añadido a favoritos', 'fa-heart'); }
