@@ -148,35 +148,63 @@
         #yt-player-container { display: none; }
         .loader { text-align: center; color: var(--text-gray); padding: 20px; display: none; }
 
-        /* --- MODO FLOTANTE (WINAMP STYLE) --- */
+        /* --- MODO FLOTANTE (WINAMP STYLE) CORREGIDO --- */
         .player-bar.floating {
             position: fixed !important;
             top: 20px !important;
             right: 20px !important;
             bottom: auto !important;
             left: auto !important;
-            width: 300px !important;
-            height: 60px !important;
+            width: 320px !important; /* Un poco más ancho para que quepa la barra */
+            height: 70px !important;
             z-index: 9999 !important;
             border-radius: 12px !important;
             box-shadow: 0 10px 30px rgba(0,0,0,0.8) !important;
             border: 1px solid #333 !important;
             background: rgba(0, 0, 0, 0.95) !important;
-            padding: 10px !important;
-            cursor: move;
+            padding: 10px 15px !important;
+            cursor: move; /* Indica que se puede arrastrar */
+            flex-direction: column !important; /* Apilar elementos verticalmente */
+            justify-content: center !important;
         }
 
-        .player-bar.floating .player-left { width: 40% !important; min-width: auto !important; }
-        .player-bar.floating .player-img { width: 40px !important; height: 40px !important; margin-right: 8px !important; }
-        .player-bar.floating .track-info { overflow: hidden; }
-        .player-bar.floating .track-name { font-size: 0.75rem !important; }
-        .player-bar.floating .artist-name { display: none !important; }
-        .player-bar.floating .player-center { width: 60% !important; }
-        .player-bar.floating .controls { margin-bottom: 0 !important; gap: 10px !important; }
-        .player-bar.floating .btn-play { width: 28px !important; height: 28px !important; }
-        .player-bar.floating .progress-bar { display: none !important; }
-        .player-bar.floating .fav-btn, 
-        .player-bar.floating .player-utils > *:not(#pipBtn) { display: none !important; }
+        /* Ajustes específicos para elementos dentro del modo flotante */
+        .player-bar.floating .player-left { 
+            width: 100% !important; 
+            min-width: auto !important; 
+            margin-bottom: 5px !important;
+            justify-content: flex-start !important;
+        }
+        .player-bar.floating .player-img { width: 35px !important; height: 35px !important; margin-right: 10px !important; }
+        .player-bar.floating .track-info { flex: 1; overflow: hidden; }
+        .player-bar.floating .track-name { font-size: 0.8rem !important; }
+        .player-bar.floating .artist-name { font-size: 0.7rem !important; display: block !important; } /* Mostrar artista en flotante */
+        .player-bar.floating .fav-btn { display: none !important; } /* Ocultar favorito para ahorrar espacio */
+
+        .player-bar.floating .player-center { 
+            width: 100% !important; 
+            max-width: none !important;
+            margin-top: 2px !important;
+        }
+        .player-bar.floating .controls { 
+            margin-bottom: 4px !important; 
+            gap: 15px !important; 
+            justify-content: center !important;
+        }
+        .player-bar.floating .btn-play { width: 30px !important; height: 30px !important; }
+        
+        /* ¡MOSTRAR BARRA DE PROGRESO EN FLOTANTE! */
+        .player-bar.floating .progress-bar { 
+            display: flex !important; 
+            height: 3px !important; 
+            gap: 5px !important;
+            font-size: 0.65rem !important;
+        }
+        .player-bar.floating .progress-bar span { display: block !important; } /* Mostrar tiempos */
+
+        .player-bar.floating .player-utils { 
+            display: none !important; /* Ocultar utilidades extra en flotante */
+        }
 
         #pipBtn.active { color: var(--spotify-green); opacity: 1 !important; }
 
@@ -249,7 +277,7 @@
 
             <div class="mood-selector">
                 <button class="mood-btn mood-energy" onclick="setMood('energy')"> Energía</button>
-                <button class="mood-btn mood-relax" onclick="setMood('relax')">☁️ Relax</button>
+                <button class="mood-btn mood-relax" onclick="setMood('relax')">️ Relax</button>
                 <button class="mood-btn mood-party" onclick="setMood('party')">🍸 Fiesta</button>
                 <button class="mood-btn mood-sad" onclick="setMood('sad')">Melancolía</button>
                 <button class="mood-btn mood-focus" onclick="setMood('focus')"> Enfoque</button>
@@ -261,7 +289,7 @@
     </div>
 
     <!-- PLAYER BAR (FIJA ABAJO) -->
-    <div class="player-bar">
+    <div class="player-bar" id="playerBar">
         <div class="player-left">
             <img src="" class="player-img" id="currentImg">
             <div class="track-info">
@@ -276,7 +304,8 @@
                 <button class="btn-play" onclick="togglePlay()" id="playBtn"><i class="fas fa-play"></i></button>
                 <button class="btn-control" onclick="nextSong(true)"><i class="fas fa-step-forward"></i></button>
             </div>
-            <div class="progress-bar">
+            <!-- Barra de progreso con evento click para buscar -->
+            <div class="progress-bar" id="progressBarContainer" onclick="seekSong(event)">
                 <span id="currTime">0:00</span>
                 <div style="flex:1; height:4px; background:#535353; border-radius:2px; position:relative;">
                     <div class="progress-fill" id="progFill"></div>
@@ -287,7 +316,7 @@
         <div class="player-utils">
             <i class="fas fa-random" id="shuffleIcon" onclick="toggleShuffle()" style="cursor:pointer; opacity:0.5;"></i>
             <!-- BOTÓN MODO FLOTANTE / PiP -->
-            <i class="fas fa-external-link-alt" id="pipBtn" onclick="togglePiPMode()" title="Modo Flotante Externo" style="cursor:pointer; margin-left: 15px; opacity: 0.7;"></i>
+            <i class="fas fa-compress-arrows-alt" id="pipBtn" onclick="toggleFloatingMode()" title="Modo Flotante" style="cursor:pointer; margin-left: 15px; opacity: 0.7;"></i>
             <i class="fas fa-volume-up" style="opacity:0.7;"></i>
         </div>
     </div>
@@ -297,8 +326,6 @@
 
     <script>
         // --- CONFIGURACIÓN ---
-        // ⚠️ IMPORTANTE: Si usas Vercel con variables de entorno, deja esto vacío.
-        // Si pruebas localmente, pega tus claves aquí temporalmente.
         const YOUTUBE_API_KEY = ''; 
         const OPENVERSE_CLIENT_ID = ''; 
         const OPENVERSE_CLIENT_SECRET = ''; 
@@ -317,14 +344,14 @@
         let shuffleMode = false;
         
         const audioEl = document.getElementById('audio-element');
-        
-        // Elemento de video oculto para el truco de PiP en MP3 (si se implementa)
-        let fakeVideoEl = null; 
+        const playerBar = document.getElementById('playerBar');
+        const pipBtn = document.getElementById('pipBtn');
+        const progressBarContainer = document.getElementById('progressBarContainer');
 
         resetView();
         loadYouTubeAPI();
 
-        // --- LIMPIEZA DE CONSOLA (SILENCIAR ERRORES DE YOUTUBE) ---
+        // --- LIMPIEZA DE CONSOLA ---
         window.onerror = function(msg, url, lineNo, columnNo, error) {
             if (msg && msg.includes('postMessage') && msg.includes('youtube')) return true;
             if (msg && msg.includes('Slow network')) return true;
@@ -350,11 +377,9 @@
             container.innerHTML = '';
 
             try {
-                // Intentar buscar en YouTube primero
                 if (YOUTUBE_API_KEY) {
                     await searchYouTube(query);
                 } else {
-                    // Si no hay clave, intentar usar el backend de Vercel (/api/search)
                     try {
                         const response = await fetch(`/api/search?query=${encodeURIComponent(query)}&type=youtube`);
                         if(response.ok) {
@@ -371,13 +396,12 @@
                             }
                         }
                     } catch (e) { console.warn("Backend no disponible...", e); }
-                    // Fallback a Openverse si falla YouTube
                     await searchOpenverse(query);
                 }
             } catch (e) {
                 console.warn("YouTube falló, probando Openverse...", e);
                 try { await searchOpenverse(query); } 
-                catch (e2) { container.innerHTML = '<p style="padding:20px; color:#aaa;">Sin resultados. Intenta otro término.</p>'; }
+                catch (e2) { container.innerHTML = '<p style="padding:20px; color:#aaa;">Sin resultados.</p>'; }
             } finally {
                 if(loader.style.display === 'block') loader.style.display = 'none';
             }
@@ -508,113 +532,121 @@
         function nextSong(manual = false) { if(manual && shuffleMode) { play(Math.floor(Math.random() * currentList.length)); return; } let next = currentIndex + 1; if(next >= currentList.length) next = 0; play(next); }
         function prevSong() { let prev = currentIndex - 1; if(prev < 0) prev = currentList.length - 1; play(prev); }
         function stopAll() { if(ytPlayer) { ytPlayer.stopVideo(); ytPlayer.destroy(); ytPlayer = null; } audioEl.pause(); if(progressInterval) clearInterval(progressInterval); isPlaying = false; updateIcon(); document.getElementById('progFill').style.width = '0%'; }
-        function startProgress(source) { if(progressInterval) clearInterval(progressInterval); progressInterval = setInterval(() => { let curr, dur; if(source === ytPlayer) { curr = source.getCurrentTime(); dur = source.getDuration(); } else { curr = source.currentTime; dur = source.duration; } if(dur) { document.getElementById('progFill').style.width = `${(curr/dur)*100}%`; document.getElementById('currTime').innerText = format(curr); document.getElementById('totalTime').innerText = format(dur); } }, 500); }
-        function updateProgress(curr, dur) { }
+        
+        function startProgress(source) {
+            if(progressInterval) clearInterval(progressInterval);
+            progressInterval = setInterval(() => {
+                let curr, dur;
+                if(source === ytPlayer) { curr = source.getCurrentTime(); dur = source.getDuration(); }
+                else { curr = source.currentTime; dur = source.duration; }
+                if(dur) {
+                    document.getElementById('progFill').style.width = `${(curr/dur)*100}%`;
+                    document.getElementById('currTime').innerText = format(curr);
+                    document.getElementById('totalTime').innerText = format(dur);
+                }
+            }, 500);
+        }
+
+        function updateProgress(curr, dur) { 
+            if(dur) {
+                document.getElementById('progFill').style.width = `${(curr/dur)*100}%`;
+                document.getElementById('currTime').innerText = format(curr);
+                document.getElementById('totalTime').innerText = format(dur);
+            }
+        }
+
+        // --- NUEVA FUNCIÓN: SEEK (ADELANTAR/RETROCEDER) ---
+        function seekSong(e) {
+            if(currentIndex === -1) return;
+            const bar = e.currentTarget;
+            const rect = bar.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const width = rect.width;
+            // Restamos el ancho de los textos de tiempo si es necesario, pero flex lo maneja bien
+            // Calculamos porcentaje
+            const percentage = clickX / width;
+            
+            const song = currentList[currentIndex];
+            if (song.type === 'yt' && ytPlayer) {
+                const duration = ytPlayer.getDuration();
+                ytPlayer.seekTo(duration * percentage, true);
+            } else if (song.type === 'mp3') {
+                const duration = audioEl.duration;
+                audioEl.currentTime = duration * percentage;
+            }
+        }
+
         function updateIcon() { document.getElementById('playBtn').innerHTML = isPlaying ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>'; }
         function format(sec) { if(!sec) return "0:00"; const m=Math.floor(sec/60); const s=Math.floor(sec%60); return `${m}:${s<10?'0'+s:s}`; }
         function toggleFavorite() { if(currentIndex === -1) return; const song = currentList[currentIndex]; const idx = favorites.findIndex(f => f.title === song.title && f.artist === song.artist); if(idx >= 0) favorites.splice(idx, 1); else favorites.push(song); localStorage.setItem('nowarfy_favs', JSON.stringify(favorites)); updateFavButton(song); document.getElementById('favCount').innerText = favorites.length; }
         function updateFavButton(song) { const exists = favorites.some(f => f.title === song.title && f.artist === song.artist); document.getElementById('favBtn').className = exists ? "fas fa-heart fav-btn active" : "far fa-heart fav-btn"; }
         function toggleShuffle() { shuffleMode = !shuffleMode; const icon = document.getElementById('shuffleIcon'); icon.style.color = shuffleMode ? 'var(--spotify-green)' : '#777'; icon.style.opacity = shuffleMode ? '1' : '0.5'; }
 
-        // --- MODO PICTURE-IN-PICTURE (CON FALLBACK INTELIGENTE) ---
-        let isPiPActive = false;
-        const pipBtn = document.getElementById('pipBtn');
-        const playerBar = document.querySelector('.player-bar');
+        // --- MODO FLOTANTE CORREGIDO (ARRASTRE + RETORNO) ---
+        let isFloating = false;
 
-        async function togglePiPMode() {
-            const song = currentList[currentIndex];
-            if (!song) return alert("Selecciona una canción primero.");
-
-            if (document.pictureInPictureElement) {
-                await document.exitPictureInPicture();
-                isPiPActive = false;
-                updatePiPButtonState();
-                return;
-            }
-
-            try {
-                if (song.type === 'yt' && ytPlayer) {
-                    // CASO YOUTUBE: PiP Nativo del Iframe
-                    const iframe = document.querySelector('iframe');
-                    if (iframe && iframe.requestPictureInPicture) {
-                        await iframe.requestPictureInPicture();
-                        isPiPActive = true;
-                        updatePiPButtonState();
-                    } else {
-                        alert("Tu navegador no soporta PiP para este video.");
-                    }
-                } else if (song.type === 'mp3') {
-                    // CASO MP3: Activar el "Modo Flotante Interno" (CSS) como alternativa superior
-                    activateInternalFloatingMode();
-                }
-            } catch (error) {
-                console.error("Error PiP:", error);
-                // Fallback a modo interno si falla
-                activateInternalFloatingMode();
-            }
-        }
-
-        function activateInternalFloatingMode() {
-            // Activa el modo flotante CSS que ya definimos (Winamp style)
-            playerBar.classList.add('floating');
-            pipBtn.classList.add('active');
-            pipBtn.classList.remove('fa-external-link-alt');
-            pipBtn.classList.add('fa-compress'); 
-            pipBtn.style.color = 'var(--spotify-green)';
-            pipBtn.style.opacity = '1';
+        function toggleFloatingMode() {
+            isFloating = !isFloating;
             
-            // Hacerla arrastrable
-            makeDraggable(playerBar);
-            // Opcional: Alerta informativa
-            // alert("💡 Modo Flotante Activado (Interno).\nPara MP3, el navegador no permite salir de la pestaña sin video. ¡Pero puedes mover esta ventana por toda la pantalla!");
-        }
-
-        function updatePiPButtonState() {
-            if (isPiPActive) {
+            if (isFloating) {
+                // ACTIVAR MODO FLOTANTE
+                playerBar.classList.add('floating');
                 pipBtn.classList.add('active');
-                pipBtn.classList.remove('fa-external-link-alt');
-                pipBtn.classList.add('fa-compress');
-                pipBtn.style.color = 'var(--spotify-green)';
-                pipBtn.style.opacity = '1';
+                pipBtn.classList.remove('fa-compress-arrows-alt');
+                pipBtn.classList.add('fa-expand-arrows-alt'); // Icono de "volver"
+                
+                // Iniciar arrastre
+                makeDraggable(playerBar);
             } else {
-                pipBtn.classList.remove('active');
-                pipBtn.classList.remove('fa-compress');
-                pipBtn.classList.add('fa-external-link-alt');
-                pipBtn.style.color = 'var(--text-gray)';
-                pipBtn.style.opacity = '0.7';
-                // Asegurar que el modo interno también se desactive si salimos de PiP externo
+                // VOLVER A POSICIÓN ORIGINAL
                 playerBar.classList.remove('floating');
+                pipBtn.classList.remove('active');
+                pipBtn.classList.remove('fa-expand-arrows-alt');
+                pipBtn.classList.add('fa-compress-arrows-alt');
+                
+                // Detener arrastre
                 playerBar.onmousedown = null;
+                playerBar.style.top = '';
+                playerBar.style.left = '';
+                playerBar.style.right = ''; // Resetear right también
             }
         }
-
-        document.addEventListener('leavepictureinpicture', () => {
-            isPiPActive = false;
-            updatePiPButtonState();
-        });
 
         function makeDraggable(element) {
             let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+            
+            // Permitir arrastre desde cualquier parte del reproductor
             element.onmousedown = dragMouseDown;
+
             function dragMouseDown(e) {
                 e = e || window.event;
                 e.preventDefault();
+                // Obtener posición inicial del mouse
                 pos3 = e.clientX;
                 pos4 = e.clientY;
+                
+                // Si estamos en modo flotante, quitamos right:0 para permitir movimiento libre a la izquierda
+                element.style.right = 'auto'; 
+                
                 document.onmouseup = closeDragElement;
                 document.onmousemove = elementDrag;
             }
+
             function elementDrag(e) {
                 e = e || window.event;
                 e.preventDefault();
+                // Calcular nueva posición
                 pos1 = pos3 - e.clientX;
                 pos2 = pos4 - e.clientY;
                 pos3 = e.clientX;
                 pos4 = e.clientY;
+                // Establecer nueva posición
                 element.style.top = (element.offsetTop - pos2) + "px";
                 element.style.left = (element.offsetLeft - pos1) + "px";
             }
+
             function closeDragElement() {
+                // Detener movimiento al soltar el mouse
                 document.onmouseup = null;
                 document.onmousemove = null;
             }
